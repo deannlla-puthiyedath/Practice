@@ -144,7 +144,7 @@ def grain_mask(a, keep=0.78):
 
 
 # ---------- face (kajal eyes, smile, wink) ----------
-def face_layer(cx, cy, r, wink, smile=1.0, ss=2):
+def face_layer(cx, cy, r, wink, smile=1.0, ss=2, eyes=False):
     """Returns (rgb, alpha). wink: 0 open .. 1 right eye shut."""
     w, h = W * ss, H * ss
     cx, cy, r = cx * ss, cy * ss, r * ss
@@ -153,7 +153,7 @@ def face_layer(cx, cy, r, wink, smile=1.0, ss=2):
     dr, da = ImageDraw.Draw(rgb), ImageDraw.Draw(al)
     ink = (20, 22, 40)
     ew, eh = r * 0.30, r * 0.15
-    for side in (-1, 1):
+    for side in ((-1, 1) if eyes else ()):
         ex, ey = cx + side * r * 0.36, cy - r * 0.12
         closed = wink if side == 1 else 0.0
         hh = eh * (1 - closed)
@@ -185,9 +185,6 @@ def face_layer(cx, cy, r, wink, smile=1.0, ss=2):
                 bx, by = ex - ew + 2 * ew * u, ey + eh * 0.35 * np.sin(np.pi * u)
                 seg = [(bx, by), (bx + (u - 0.5) * ew * 0.5, by + eh * 0.55)]
                 dr.line(seg, fill=ink, width=int(r * 0.022)); da.line(seg, fill=255, width=int(r * 0.022))
-    # smile
-    sm = [(cx - r * 0.34 + r * 0.68 * u, cy + r * 0.28 + smile * r * 0.17 * np.sin(np.pi * u)) for u in np.linspace(0, 1, 50)]
-    dr.line(sm, fill=ink, width=int(r * 0.045), joint="curve"); da.line(sm, fill=255, width=int(r * 0.045), joint="curve")
     # cheeks (magenta crayon blush)
     for side in (-1, 1):
         bx, by = cx + side * r * 0.55, cy + r * 0.18

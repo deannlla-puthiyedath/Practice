@@ -135,7 +135,7 @@ def frame(t):
         fa = ramp(t, 12.4, 13.2) * (1 - ramp(t, 19.0, 20.0))
         if fa > 0:
             wink = np.sin(np.pi * np.clip((t - 16.85) / 0.6, 0, 1)) ** 0.7
-            frgb, fal = face_layer(sun[0], sun[1], SUN_R * s, wink)
+            frgb, fal = face_layer(sun[0], sun[1], SUN_R * s, 0, smile=1.0 + 0.3 * wink)
             base = over(base, frgb, fal * fa)
         if dz > 0:  # reverse-disperse dissolve to paper: specks drift out and vanish
             key = 0.62 * NOISE + 0.38 * np.clip(np.hypot(*np.mgrid[:H, :W][::-1] - np.array([sun[0], sun[1]])[:, None, None]) / 1400, 0, 1)
