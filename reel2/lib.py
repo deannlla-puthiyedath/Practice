@@ -161,13 +161,14 @@ def face_layer(cx, cy, r, wink, smile=1.0, ss=2):
             # almond: two arcs
             top = [(ex - ew + 2 * ew * u, ey - hh * np.sin(np.pi * u) ** 0.8) for u in np.linspace(0, 1, 40)]
             bot = [(ex + ew - 2 * ew * u, ey + hh * 0.75 * np.sin(np.pi * u) ** 0.9) for u in np.linspace(0, 1, 40)]
-            dr.polygon(top + bot, fill=(250, 248, 240)); da.polygon(top + bot, fill=255)
+            # eye drawn on its own layer, clipped to the almond, then pasted in
+            eye = Image.new("RGB", (w, h), (250, 248, 240))
+            ed = ImageDraw.Draw(eye)
             ir = min(hh, eh) * 0.82
-            dr.ellipse((ex - ir, ey - ir * 0.95, ex + ir, ey + ir * 0.95), fill=(28, 30, 52))
-            dr.ellipse((ex - ir * 0.25 + ir * 0.3, ey - ir * 0.55, ex + ir * 0.25 + ir * 0.3, ey - ir * 0.05), fill=(250, 248, 240))
-            # re-clip iris to almond
+            ed.ellipse((ex - ir, ey - ir * 0.95, ex + ir, ey + ir * 0.95), fill=(28, 30, 52))
+            ed.ellipse((ex - ir * 0.25 + ir * 0.3, ey - ir * 0.55, ex + ir * 0.25 + ir * 0.3, ey - ir * 0.05), fill=(250, 248, 240))
             m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).polygon(top + bot, fill=255)
-            rgb = Image.composite(rgb, Image.new("RGB", (w, h), (0, 0, 0)), Image.composite(m, Image.new("L", (w, h), 255), al))
+            rgb.paste(eye, (0, 0), m); da.polygon(top + bot, fill=255)
             dr = ImageDraw.Draw(rgb)
             # kajal: thick upper line with flick, thinner lower line
             flick = [(ex + side * ew, ey), (ex + side * ew * 1.32, ey - eh * 0.55)]
@@ -288,13 +289,14 @@ def wing_layer(side, progress, ss=2):
             ease = 1 - (1 - appear) ** 3
             poly, base, tip = feather_poly(p[0], p[1], ang + (1 - ease) * 0.5, L * (0.35 + 0.65 * ease), fw * ss, curl=-0.16)
             col = WING_COLS[cyc[i % len(cyc)]]
-            m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).polygon(poly, fill=255)
-            # bounding box to keep it cheap
+            # draw only inside the feather's bounding box to keep it cheap
             xs = [q[0] for q in poly]; ys = [q[1] for q in poly]
             x0, x1 = int(max(min(xs) - 8, 0)), int(min(max(xs) + 8, w)); y0, y1 = int(max(min(ys) - 8, 0)), int(min(max(ys) + 8, h))
             if x1 <= x0 or y1 <= y0:
                 continue
-            mm = np.asarray(m.crop((x0, y0, x1, y1))).astype(np.float32) / 255
+            m = Image.new("L", (x1 - x0, y1 - y0), 0)
+            ImageDraw.Draw(m).polygon([(qx - x0, qy - y0) for qx, qy in poly], fill=255)
+            mm = np.asarray(m).astype(np.float32) / 255
             # impasto streaks along the feather: lighter + darker strokes
             st = Image.new("L", (x1 - x0, y1 - y0), 128); sd = ImageDraw.Draw(st)
             dv = np.array([np.cos(ang), np.sin(ang)]); nv = np.array([-dv[1], dv[0]])
