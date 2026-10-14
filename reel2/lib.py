@@ -348,3 +348,99 @@ def doodles(t, seed=5):
             crayon_line(d, star_pts(x, y, 26, t * 0.3), c, 5, closed=True)
     a = np.asarray(im).astype(np.float32) / 255
     return a[..., :3], grain_mask(a[..., 3], 0.8)
+
+
+# ---------- ransom-note cut-out letters ----------
+from PIL import ImageFont
+_FD = "/usr/share/fonts/truetype/"
+import glob as _glob
+def _font_path(name):
+    hits = _glob.glob(f"/usr/share/fonts/**/{name}", recursive=True)
+    return hits[0] if hits else None
+FONTS = [p for p in map(_font_path, ["DejaVuSerif-Bold.ttf", "FreeSansBold.ttf", "Caladea-Bold.ttf", "FreeMonoBold.ttf",
+                                     "Inter-Black.otf", "Carlito-BoldItalic.ttf", "FreeSerifBoldItalic.ttf", "DejaVuSans-Bold.ttf"]) if p]
+TILE_BG = [(255, 255, 255), (250, 244, 228), (246, 230, 120), (255, 255, 255), (240, 236, 230)]
+
+
+def ransom(text, ink, size=64, seed=0, max_w=760):
+    """Returns RGBA PIL image of the cut-out line(s), word-wrapped to max_w."""
+    r = np.random.default_rng(seed)
+    tiles = []
+    for ch in text:
+        if ch == " ":
+            tiles.append(None); continue
+        f = ImageFont.truetype(FONTS[r.integers(len(FONTS))], int(size * r.uniform(0.92, 1.12)))
+        bb = f.getbbox(ch)
+        tw, th = bb[2] - bb[0] + int(size * 0.22), int(size * 1.18)
+        t = Image.new("RGBA", (tw, th), TILE_BG[r.integers(len(TILE_BG))] + (255,))
+        ImageDraw.Draw(t).text(((tw - (bb[2] - bb[0])) / 2 - bb[0], (th - size) / 2 - size * 0.05), ch, font=f, fill=tuple(ink))
+        t = t.rotate(r.uniform(-7, 7), expand=True, resample=Image.BICUBIC)
+        tiles.append(t)
+    # wrap into lines
+    words, cur = [], []
+    for t in tiles:
+        if t is None:
+            words.append(cur); cur = []
+        else:
+            cur.append(t)
+    words.append(cur)
+    gap = int(size * 0.32)
+    lines, line, lw = [], [], 0
+    for wd in words:
+        ww = sum(t.width - 3 for t in wd)
+        if line and lw + gap + ww > max_w:
+            lines.append(line); line, lw = [], 0
+        line.append(wd); lw += (gap if lw else 0) + ww
+    lines.append(line)
+    lh = int(size * 1.35)
+    widths = [sum(sum(t.width - 3 for t in wd) for wd in ln) + gap * (len(ln) - 1) for ln in lines]
+    out = Image.new("RGBA", (max(widths) + 24, lh * len(lines) + 24), (0, 0, 0, 0))
+    for li, ln in enumerate(lines):
+        x = 12 + (max(widths) - widths[li]) // 2
+        for wd in ln:
+            for t in wd:
+                y = 12 + li * lh + (lh - t.height) // 2 + int(r.integers(-4, 5))
+                out.alpha_composite(t, (x, max(y, 0)))
+                x += t.width - 3
+            x += gap
+    # drop shadow
+    a = out.split()[3]
+    sh = Image.new("RGBA", out.size, (0, 0, 0, 0)); sh.putalpha(a.filter(ImageFilter.GaussianBlur(4)).point(lambda v: v * 0.45))
+    fin = Image.new("RGBA", (out.width + 8, out.height + 8), (0, 0, 0, 0))
+    fin.alpha_composite(sh, (7, 7)); fin.alpha_composite(out, (0, 0))
+    return fin
+
+
+def paste_rgba(base, im, x, y, scale=1.0, alpha=1.0):
+    if scale != 1.0:
+        im = im.resize((max(1, int(im.width * scale)), max(1, int(im.height * scale))), Image.LANCZOS)
+    a = np.asarray(im).astype(np.float32) / 255
+    x, y = int(x - im.width / 2), int(y - im.height / 2)
+    x0, y0, x1, y1 = max(x, 0), max(y, 0), min(x + im.width, W), min(y + im.height, H)
+    if x1 <= x0 or y1 <= y0:
+        return base
+    sub = a[y0 - y:y1 - y, x0 - x:x1 - x]
+    al = sub[..., 3:4] * alpha
+    base[y0:y1, x0:x1] = base[y0:y1, x0:x1] * (1 - al) + sub[..., :3] * al
+    return base
+
+
+def logo_sticker(px=250):
+    """Della's rose logo on a torn-edge paper sticker (keeps its white ground honest)."""
+    lg = Image.open("logo.png").convert("RGB").resize((px, int(px * 126 / 130)), Image.LANCZOS)
+    pad = 18
+    st = Image.new("RGBA", (lg.width + pad * 2, lg.height + pad * 2), (255, 255, 255, 255))
+    st.paste(lg, (pad, pad))
+    m = Image.new("L", st.size, 0); r = np.random.default_rng(4)
+    pts = []
+    for u in np.linspace(0, 1, 60, endpoint=False):  # wobbly torn edge
+        a = u * 2 * np.pi
+        rr = 0.5 + 0.02 * r.standard_normal()
+        pts.append((st.width / 2 + rr * st.width * np.cos(a) * 1.0, st.height / 2 + rr * st.height * np.sin(a) * 1.0))
+    ImageDraw.Draw(m).polygon(pts, fill=255)
+    st.putalpha(m)
+    st = st.rotate(-4, expand=True, resample=Image.BICUBIC)
+    sh = Image.new("RGBA", st.size, (0, 0, 0, 0)); sh.putalpha(st.split()[3].filter(ImageFilter.GaussianBlur(5)).point(lambda v: v * 0.4))
+    fin = Image.new("RGBA", (st.width + 10, st.height + 10), (0, 0, 0, 0))
+    fin.alpha_composite(sh, (8, 8)); fin.alpha_composite(st, (0, 0))
+    return fin
