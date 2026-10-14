@@ -235,16 +235,20 @@ def halo_layer(cx, cy, rw, tilt_deg, t, ring_col):
 WING_COLS = [ORANGE, MAGENTA, YELLOW, BLUE]
 
 
-def feather_poly(bx, by, ang, L, w, curl=0.08):
-    """Long narrow feather from base (bx,by) pointing at angle ang (rad), pointed tip, slight curve."""
+def feather_poly(bx, by, ang, L, w, curl=0.16):
+    """Soft, thick feather: widest past the middle, rounded tip, gentle outward curve."""
     d = np.array([np.cos(ang), np.sin(ang)]); n = np.array([-d[1], d[0]])
     left, right = [], []
-    for u in np.linspace(0, 1, 18):
+    us = np.linspace(0, 1, 40)
+    for u in us:
         c = np.array([bx, by]) + d * L * u + n * L * curl * u * u
-        hw = w * (0.55 + 0.45 * np.sin(np.pi * min(u * 1.05, 1)) ** 0.7) * (1 - u ** 3)
+        if u < 0.72:
+            hw = w * (0.55 + 0.45 * np.sin(np.pi / 2 * u / 0.72))
+        else:
+            hw = w * np.sqrt(max(0.0, 1 - ((u - 0.72) / 0.28) ** 2))
         left.append(tuple(c + n * hw)); right.append(tuple(c - n * hw))
     tip = tuple(np.array([bx, by]) + d * L + n * L * curl)
-    return left + [tip] + right[::-1], (bx, by), tip
+    return left + right[::-1], (bx, by), tip
 
 
 def wing_layer(side, progress, ss=2):
@@ -257,10 +261,10 @@ def wing_layer(side, progress, ss=2):
     ctrl = np.array([730.0, 230.0]) * ss
     frng = np.random.default_rng(11)
     rows = [  # (count, length range, width, colour idx cycle, arm offset)
-        (16, (600, 1120), 24, [3], 0.0),
-        (14, (380, 700), 25, [1], 0.02),
-        (12, (200, 380), 26, [0], 0.04),
-        (11, (80, 125), 24, [2], 0.06),
+        (12, (600, 1080), 46, [3], 0.0),
+        (10, (380, 680), 48, [1], 0.02),
+        (9, (210, 370), 50, [0], 0.04),
+        (8, (95, 140), 46, [2], 0.06),
     ]
     order = 0
     total = sum(r[0] for r in rows)
@@ -282,7 +286,7 @@ def wing_layer(side, progress, ss=2):
             if appear <= 0:
                 continue
             ease = 1 - (1 - appear) ** 3
-            poly, base, tip = feather_poly(p[0], p[1], ang + (1 - ease) * 0.5, L * (0.35 + 0.65 * ease), fw * ss)
+            poly, base, tip = feather_poly(p[0], p[1], ang + (1 - ease) * 0.5, L * (0.35 + 0.65 * ease), fw * ss, curl=-0.16)
             col = WING_COLS[cyc[i % len(cyc)]]
             m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).polygon(poly, fill=255)
             # bounding box to keep it cheap
