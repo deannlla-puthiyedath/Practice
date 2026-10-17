@@ -7,3 +7,10 @@ reel2/__pycache__/
 reel2/della_antony_reel2_final.mp4
 reel2/della_antony_reel2_v2.mp4
 reel2/seg.mp4
+reel1_trial/*.mp4
+reel1_trial/*.png
+reel1_trial/*.jpg
+reel1_trial/*.npy
+reel1_trial/fraternizing.jpeg
+reel1_trial/logo.png
+reel1_trial/__pycache__/
