@@ -14,3 +14,6 @@ reel1_trial/*.npy
 reel1_trial/fraternizing.jpeg
 reel1_trial/logo.png
 reel1_trial/__pycache__/
+tangent/*.mp4
+tangent/*.png
+tangent/__pycache__/
