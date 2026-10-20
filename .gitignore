@@ -17,3 +17,4 @@ reel1_trial/__pycache__/
 tangent/*.mp4
 tangent/*.png
 tangent/__pycache__/
+tangent/*.wav
