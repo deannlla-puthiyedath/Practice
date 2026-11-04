@@ -13,10 +13,9 @@ The `sources` folder has your original photos. Never upload that one — the pho
 
 ## Please check these before you share the link
 1. **Malayalam and Hindi text** (the two tabs under "Who she is"). Claude wrote it as a first draft. It needs your eyes.
-2. **Two Drive videos, one confirmed and one a guess** (Claude cannot open videos):
-   - Slate 02, *Tamil monologue* is `10cfcb15…mov`, the random-letter file you pointed to. Confirmed by you.
-   - Slate 03, *British accent* is `IMG_0392.MOV`. This one is a **guess**: it is the only video left that is not otherwise used. Tap it on your phone. If it is wrong, tell Claude which video it should be.
-3. **Slate 06, the modelling video** is the 53-second "details in Malayalam" video. It is saved on the website itself, not on Drive, so it plays with the site's own controls. Its length (0:53) is the same as the Tamil monologue you listed. If you meant them to be the same video, tell Claude.
+2. **Thumbnails on two clips are stand-ins.** Claude cannot open the *Tamil monologue* or *British accent* videos, so their covers are photos of you (the yellow saree and the smiling portrait). Send a screenshot from each video and Claude will swap them in.
+   Also, the *British accent* (Slate 04) plays `IMG_0392.MOV`, which is still a **guess**. Tap it on your phone. If it is wrong, tell Claude which video it should be. The *Tamil monologue* (Slate 05) is `10cfcb15…mov`, confirmed by you.
+3. **Slate 01, the modelling video** is the 53-second "details in Malayalam" video. It is saved on the website itself, not on Drive, so it plays with the site's own controls. Its length (0:53) is the same as the Tamil monologue you listed. If you meant them to be the same video, tell Claude.
 4. **The eight "What she brings" cards.** Claude wrote the sentences from the facts you gave. Read them once and change anything that does not sound like you.
 
 ## What changed from your handoff (so nothing surprises you)
@@ -28,3 +27,6 @@ The `sources` folder has your original photos. Never upload that one — the pho
 - Google and other search sites are told not to list it. Only people who have the link can find it.
 - It is not password-protected: anyone you send the link to can forward it.
 - The website tracks nothing. No phone number or home address appears anywhere.
+
+## Contact
+The email link on the last screen opens a message to hello@dellaantony.com with deannlla@gmail.com copied in (cc). The Gmail address is inside the link, not written on the page.

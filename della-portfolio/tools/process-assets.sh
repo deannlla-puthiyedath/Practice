@@ -26,7 +26,9 @@ conv kitchen     $V/kitchen-full.jpg
 # Posters for the Drive-embed cards
 P=site/assets/clips
 ffmpeg -v error -y -ss 10 -i sources/clips/Monologue-Hindi.MOV -frames:v 1 -q:v 3 $P/hindi-monologue.jpg
-convert sources/clips/tamil-intro-still.png -strip -resize '480x>' -quality 72 -interlace Plane $P/tamil-intro.jpg
+# Thumbnails for the two clips Claude cannot open (stand-ins until real frames are supplied)
+convert sources/clips/tamil-intro-still.png -strip -resize '480x>' -quality 72 -interlace Plane $P/tamil-monologue.jpg
+convert $V/hero.jpg -auto-orient -strip -crop 900x1600+83+0 +repage -resize 480x853 -quality 72 -interlace Plane $P/english-accent.jpg
 convert sources/stills/Sari1.JPG -auto-orient -strip -resize '480x>' -quality 72 -interlace Plane $P/malayalam-song.jpg
 # Modelling video: compress to H.264 (<8 MB, 9:16, faststart) + poster frame at 45 s
 ffmpeg -v error -y -i sources/clips/model-details-malayalam.mp4 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p -vf scale=478:850 -c:a aac -b:a 96k -movflags +faststart $P/modelling.mp4
