@@ -203,5 +203,8 @@
     });
   }
 
+  /* Once the page has finished loading, fetch the sideways-slider photos too, so none is left blank on tablets */
+  addEventListener('load', () => setTimeout(() => $$('.rail img[loading="lazy"]').forEach(i => { i.loading = 'eager'; }), 400));
+
   titleSequence(); reveals(); nav(); lightbox(); tabs(); rails(); voices(); copy();
 })();

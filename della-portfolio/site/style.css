@@ -231,6 +231,8 @@ h1 span{display:block}
 .group{flex:none;display:flex;flex-direction:column;gap:14px}
 .ghead{display:flex;gap:12px;align-items:baseline;color:var(--bone);padding:0 2px 9px;border-bottom:1px solid var(--hair);background:rgba(11,10,9,.82);width:100%}
 .ghead span{color:var(--red-lit)}
+.ghead>*{position:sticky;left:var(--gutter);font-weight:400}
+.ghead .gt{margin-left:0}
 .grow{display:flex;gap:clamp(14px,1.8vw,24px);align-items:flex-start}
 .shot.lead .fm{height:calc(var(--rh)*1.12)}
 .shot{flex:none}
