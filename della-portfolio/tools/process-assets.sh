@@ -29,4 +29,6 @@ for c in sources/clips/*; do
 done
 # Poster for the Hindi Drive-embed card (frame at 10 s, calm, eyes to camera)
 ffmpeg -v error -y -ss 10 -i sources/clips/Monologue-Hindi.MOV -frames:v 1 -q:v 3 site/assets/clips/hindi-monologue.jpg
+# Poster for the Tamil intro card (a still you supplied)
+convert sources/clips/tamil-intro-still.png -strip -resize '600x>' -quality 82 -interlace Plane site/assets/clips/tamil-intro.jpg
 cat tools/manifest.txt
