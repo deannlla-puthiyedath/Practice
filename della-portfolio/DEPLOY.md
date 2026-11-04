@@ -17,7 +17,8 @@ The `sources` folder has your original photos. Never upload that one — the pho
    - Slate 02, *Tamil monologue* is `IMG_0392.MOV` (the 103 MB file, matched because it is the long one).
    - Slate 03, *British accent* is `10cfcb15…mov`.
    Tap each one on your phone. If one is wrong, tell Claude which video it should be.
-3. **The eight "What she brings" cards.** Claude wrote the sentences from the facts you gave. Read them once and change anything that does not sound like you.
+3. **Slate 06, the modelling video** is the 53-second "details in Malayalam" video. It is saved on the website itself, not on Drive, so it plays with the site's own controls. Its length (0:53) is the same as the Tamil monologue you listed. If you meant them to be the same video, tell Claude.
+4. **The eight "What she brings" cards.** Claude wrote the sentences from the facts you gave. Read them once and change anything that does not sound like you.
 
 ## What changed from your handoff (so nothing surprises you)
 - Break dance (basic) is no longer listed, because it is not in your corrected skills.
