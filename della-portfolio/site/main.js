@@ -55,7 +55,7 @@
   /* ── 4. Lightbox: arrows, swipe, Esc ── */
   function lightbox() {
     const dlg = $('#lb'), img = $('#lb-img'), count = $('#lb-count');
-    const btns = $$('.shot .fr-btn'), total = btns.length;
+    const btns = $$('.pair .fr-btn'), total = btns.length;
     let i = 0, opener = null;
     const pad = n => String(n).padStart(2, '0');
     const show = n => {
