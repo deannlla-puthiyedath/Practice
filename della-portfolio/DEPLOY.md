@@ -11,11 +11,6 @@ The `sources` folder has your original photos. Never upload that one — the pho
 3. Drag the folder onto the box that says *"Drag and drop your project folder here"*.
 4. Wait a few seconds. The same address now shows the new version.
 
-## Waiting on two pictures (the site works without them)
-- **The sunset painting** (the one made of squares). It becomes the background of the whole page.
-- **The rose artwork.** It goes in the painter card next to the call sheet.
-Put both in the same Drive folder as the others. Until then the page has a plain dark background and a text-only painter card.
-
 ## Please check these before you share the link
 1. **Malayalam and Hindi text** (the two tabs under "Who she is"). Claude wrote it as a first draft. It needs your eyes.
 2. **The two Drive videos Claude matched by guess** (it could not open them):

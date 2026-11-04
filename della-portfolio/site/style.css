@@ -26,7 +26,7 @@
   --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --body:"Inter Tight",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   /* PAINTING: when the sunset painting is supplied (assets/bg/painting-800.webp), un-comment the next line */
-  /* --painting-img: url(assets/bg/painting-800.webp); */
+  --painting-img: url(assets/bg/painting-800.webp);
 }
 @media (min-width:600px){:root{--gutter:clamp(24px,4vw,56px)}}
 
