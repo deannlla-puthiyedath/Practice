@@ -16,7 +16,7 @@ conv saree       $V/saree.jpg
 conv baby        $V/baby-screenshot.jpg 1125x1125+0+437     # crops the phone screen away
 conv building    $V/building.jpg
 conv blue-dress  $V/blue-dress.jpg
-conv kitchen     $V/kitchen-full.jpg   1242x1200+0+0         # stops above the plates, keeps the wine glass
+conv kitchen     $V/kitchen-full.jpg
 # Optional artwork: processed only if you've supplied them
 [ -f $V/painting.jpg ] && { mkdir -p site/assets/bg; convert $V/painting.jpg -strip -resize '800x>' -quality 78 -define webp:method=6 site/assets/bg/painting-800.webp; }
 [ -f $V/rose.jpg ]     && conv rose $V/rose.jpg
