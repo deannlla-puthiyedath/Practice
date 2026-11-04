@@ -94,7 +94,7 @@ em,i{font-style:italic}
 /* ── Scenes ── */
 .scene{position:relative;padding:clamp(40px,4.2vw,60px) var(--gutter)}
 .scene-head{margin-bottom:clamp(18px,2.2vw,28px)}
-.slate{display:flex;align-items:center;gap:10px;color:var(--bone-dim)}
+.slate{display:flex;align-items:center;gap:10px;color:var(--bone);width:fit-content;max-width:100%;background:rgba(11,10,9,.78);padding:3px 9px 3px 7px}
 h2{font:300 clamp(36px,4.8vw,68px)/.96 var(--display);letter-spacing:-.015em;margin-top:clamp(8px,1vw,14px)}
 h2 em{font-style:italic}
 
@@ -155,7 +155,9 @@ h1 span{display:block}
 .js h1[data-in]{letter-spacing:.3em}
 .js h1[data-in].on{animation:name-in 2s var(--ease) forwards;transition:none}
 @keyframes name-in{0%{opacity:0;letter-spacing:.3em}40%{opacity:1}100%{opacity:1;letter-spacing:.06em}}
-.hero-img.on img{animation:drift 12s linear forwards}
+.js .hero-img{opacity:0;animation:imgin 1.6s var(--ease) .45s forwards}
+@keyframes imgin{to{opacity:1}}
+.js .hero-img img{animation:drift 12s linear .45s forwards}
 @keyframes drift{from{transform:scale(1)}to{transform:scale(1.04)}}
 
 @media (min-width:960px){
@@ -178,8 +180,8 @@ h1 span{display:block}
 .bio{background:rgba(11,10,9,.96)}
 .tabs{display:flex;border-bottom:1px solid var(--hair-soft)}
 .tabs button{padding:14px clamp(14px,2.4vw,26px);color:var(--bone-dim);border-bottom:2px solid transparent;margin-bottom:-1px;letter-spacing:.14em;transition:color 600ms var(--ease),border-color 600ms var(--ease)}
-.tabs button[lang="ml"]{font:300 18px/1 "Noto Serif Malayalam",serif;letter-spacing:0;text-transform:none}
-.tabs button[lang="hi"]{font:300 18px/1 "Noto Serif Devanagari",serif;letter-spacing:0;text-transform:none}
+.tabs button[lang="ml"]{font:300 18px/1 system-ui,serif;letter-spacing:0;text-transform:none}
+.tabs button[lang="hi"]{font:300 18px/1 system-ui,serif;letter-spacing:0;text-transform:none}
 .tabs button[aria-selected="true"]{color:var(--bone);border-bottom-color:var(--red)}
 @media (hover:hover){.tabs button:hover{color:var(--bone)}}
 .panel{padding:clamp(20px,2.6vw,32px);display:grid;gap:6px 44px;font:300 clamp(20px,1.8vw,23px)/1.4 var(--display)}
@@ -222,11 +224,18 @@ h1 span{display:block}
 
 /* SC. 04 — stills */
 .shots{--rh:clamp(280px,38vh,360px);align-items:flex-start}
+.shots{gap:clamp(36px,4.4vw,72px)}
+.group{flex:none;display:flex;flex-direction:column;gap:14px}
+.ghead{display:flex;gap:12px;align-items:baseline;color:var(--bone);padding:0 2px 9px;border-bottom:1px solid var(--hair);background:rgba(11,10,9,.82);width:100%}
+.ghead span{color:var(--red-lit)}
+.grow{display:flex;gap:clamp(14px,1.8vw,24px);align-items:flex-start}
+.shot.lead .fm{height:calc(var(--rh)*1.12)}
 .shot{flex:none}
 .shot .fr-btn{position:relative;display:block;cursor:zoom-in;text-align:left}
 .shot .fm{height:var(--rh);aspect-ratio:var(--ar);transition:border-color 900ms var(--ease)}
 .shot img{width:100%;height:100%;object-fit:cover;filter:brightness(.92);transition:filter 900ms var(--ease)}
-.shot .cap{margin-top:10px;color:var(--bone-dim)}
+.shot .cap{margin-top:8px;color:var(--bone-dim)}
+.shot .cap,.shot .word{display:table;background:rgba(11,10,9,.86);padding:3px 9px}
 .shot .word{font:italic 300 clamp(24px,2.6vw,34px)/1.1 var(--display);margin-top:2px}
 @media (hover:hover){
   .shot .fr-btn:hover .fm{border-color:var(--red)}
@@ -290,7 +299,7 @@ h1 span{display:block}
 .seek::-moz-range-thumb{width:9px;height:9px;border-radius:50%;background:var(--bone);border:0}
 .seek:focus-visible{outline-offset:0}
 
-.slate-block{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:2px 10px 0;padding-top:12px;border-top:1px solid var(--hair-soft);color:var(--bone-dim);align-items:start;font-size:11px;letter-spacing:.1em}
+.slate-block{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:0;padding:12px 10px 10px;background:rgba(11,10,9,.86);border-top:1px solid var(--hair-soft);color:var(--bone-dim);align-items:start;font-size:11px;letter-spacing:.1em}
 .sb-l{display:flex;gap:18px;color:var(--bone);white-space:nowrap}
 .sb-l b{font-weight:400}
 .sb-r{display:grid;grid-template-columns:max-content 1fr;column-gap:12px;row-gap:2px;min-width:0}
@@ -352,7 +361,8 @@ h1 span{display:block}
   .rec .dot,.caret,.scroll .hair::after{animation:none}
   .js .reveal,.js .reveal.in,.js [data-in]{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
   .js h1[data-in]{letter-spacing:.06em}
-  .hero-img.on img{animation:none}
+  .js .hero-img{opacity:1!important;animation:none!important}
+  .js .hero-img img{animation:none!important}
   .rail{scroll-behavior:auto}
   *{transition-duration:.01ms!important}
 }

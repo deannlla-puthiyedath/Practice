@@ -53,7 +53,7 @@
 
 <!-- ═══════════ SC. 01 — TITLE ═══════════ -->
 <section id="sc1" class="scene title" aria-labelledby="name">
-  <figure class="hero-img" data-in="img">
+  <figure class="hero-img">
     <span class="mat"><span class="fm"><picture>
       <source type="image/webp" srcset="assets/photos/hero-800.webp 800w, assets/photos/hero-1600.webp 1067w" sizes="(min-width: 960px) 40vw, 100vw">
       <img src="assets/photos/hero-800.webp" width="1067" height="1600" fetchpriority="high" decoding="async"
@@ -189,25 +189,46 @@
     </div>
   </header>
 
-  <ul class="rail shots reveal" id="rail-range" aria-label="Range, in stills. Swipe sideways.">
-    <li class="shot" style="--ar:1125/1500"><button class="fr-btn" type="button" data-full="assets/photos/green-shirt-1600.webp" data-word="Wistful" aria-label="Enlarge frame 1, Wistful">
-      <span class="mat"><span class="fm"><img src="assets/photos/green-shirt-800.webp" width="800" height="1067" loading="lazy" decoding="async" alt="Della in a green floral shirt at a restaurant table, eyes lowered, lost in a quiet thought."></span></span></button>
-      <p class="mono cap">FR. 01</p><p class="word">Wistful</p></li>
-    <li class="shot" style="--ar:1600/1066"><button class="fr-btn" type="button" data-full="assets/photos/saree-1600.webp" data-word="Tender" aria-label="Enlarge frame 2, Tender">
-      <span class="mat"><span class="fm"><img src="assets/photos/saree-800.webp" width="800" height="533" loading="lazy" decoding="async" style="object-position:42% 40%" alt="Della in a cream saree with a red bindi, seated at a family function, gently feeding a small child."></span></span></button>
-      <p class="mono cap">FR. 02</p><p class="word">Tender</p></li>
-    <li class="shot" style="--ar:1/1"><button class="fr-btn" type="button" data-full="assets/photos/baby-1600.webp" data-word="Joy" aria-label="Enlarge frame 3, Joy">
-      <span class="mat"><span class="fm"><img src="assets/photos/baby-800.webp" width="800" height="800" loading="lazy" decoding="async" alt="Della lifting a laughing baby in white, her face close to his, at a christening."></span></span></button>
-      <p class="mono cap">FR. 03</p><p class="word">Joy</p></li>
-    <li class="shot" style="--ar:853/1280"><button class="fr-btn" type="button" data-full="assets/photos/building-1600.webp" data-word="Poised" aria-label="Enlarge frame 4, Poised">
-      <span class="mat"><span class="fm"><img src="assets/photos/building-800.webp" width="800" height="1200" loading="lazy" decoding="async" alt="Della standing upright and small beside a cream and yellow heritage wall, hair falling to her hips, looking back toward the camera."></span></span></button>
-      <p class="mono cap">FR. 04</p><p class="word">Poised</p></li>
-    <li class="shot" style="--ar:1125/1500"><button class="fr-btn" type="button" data-full="assets/photos/blue-dress-1600.webp" data-word="Unbothered" aria-label="Enlarge frame 5, Unbothered">
-      <span class="mat"><span class="fm"><img src="assets/photos/blue-dress-800.webp" width="800" height="1067" loading="lazy" decoding="async" alt="Della in a royal blue dress, reclining on a hotel bed with one hand in her hair, calm and unbothered."></span></span></button>
-      <p class="mono cap">FR. 05</p><p class="word">Unbothered</p></li>
-    <li class="shot" style="--ar:1242/1552"><button class="fr-btn" type="button" data-full="assets/photos/kitchen-1600.webp" data-word="Lost in thought" aria-label="Enlarge frame 6, Lost in thought">
-      <span class="mat"><span class="fm"><img src="assets/photos/kitchen-800.webp" width="800" height="1000" loading="lazy" decoding="async" alt="Della in a black halter dress sitting on the floor by a window, holding a wine glass, a bottle beside her, gazing off to one side."></span></span></button>
-      <p class="mono cap">FR. 06</p><p class="word">Lost in thought</p></li>
+  <ul class="rail shots reveal" id="rail-range" aria-label="Range, in stills. Swipe sideways through three groups.">
+    <li class="group" aria-label="Heritage">
+      <p class="mono ghead" aria-hidden="true"><span>A</span>Heritage</p>
+      <ul class="grow">
+      <li class="shot lead" style="--ar:1280/1600"><button class="fr-btn" type="button" data-full="assets/photos/church-1600.webp" data-word="Awe" aria-label="Enlarge frame 1, Awe">
+        <span class="mat"><span class="fm"><img src="assets/photos/church-rail.webp" width="608" height="760" loading="lazy" decoding="async" alt="Della in a dark top beside a carved wooden staircase in an old church, looking up at golden statues in the dim light."></span></span></button>
+        <p class="mono cap">FR. 01</p><p class="word">Awe</p></li>
+      <li class="shot" style="--ar:853/1280"><button class="fr-btn" type="button" data-full="assets/photos/building-1600.webp" data-word="Poised" aria-label="Enlarge frame 2, Poised">
+        <span class="mat"><span class="fm"><img src="assets/photos/building-rail.webp" width="506" height="760" loading="lazy" decoding="async" alt="Della standing upright and small beside a cream and yellow heritage wall, her hair falling to her hips, looking back toward the camera."></span></span></button>
+        <p class="mono cap">FR. 02</p><p class="word">Poised</p></li>
+      </ul>
+    </li>
+    <li class="group" aria-label="Family and festival">
+      <p class="mono ghead" aria-hidden="true"><span>B</span>Family &amp; festival</p>
+      <ul class="grow">
+      <li class="shot" style="--ar:1600/1066"><button class="fr-btn" type="button" data-full="assets/photos/saree-1600.webp" data-word="Tender" aria-label="Enlarge frame 3, Tender">
+        <span class="mat"><span class="fm"><img src="assets/photos/saree-rail.webp" width="1000" height="667" loading="lazy" decoding="async" style="object-position:42% 40%" alt="Della in a cream saree with a red bindi, seated at a family function, gently feeding a small child."></span></span></button>
+        <p class="mono cap">FR. 03</p><p class="word">Tender</p></li>
+      <li class="shot" style="--ar:1/1"><button class="fr-btn" type="button" data-full="assets/photos/baby-1600.webp" data-word="Joy" aria-label="Enlarge frame 4, Joy">
+        <span class="mat"><span class="fm"><img src="assets/photos/baby-rail.webp" width="760" height="760" loading="lazy" decoding="async" alt="Della lifting a laughing baby in white, her face close to his, at a christening."></span></span></button>
+        <p class="mono cap">FR. 04</p><p class="word">Joy</p></li>
+      <li class="shot" style="--ar:900/1600"><button class="fr-btn" type="button" data-full="assets/photos/night-lights-1600.webp" data-word="Radiant" aria-label="Enlarge frame 5, Radiant">
+        <span class="mat"><span class="fm"><img src="assets/photos/night-lights-rail.webp" width="428" height="760" loading="lazy" decoding="async" alt="Della in a lilac knit top and a long cream embroidered skirt, standing before a gate strung with fairy lights at night."></span></span></button>
+        <p class="mono cap">FR. 05</p><p class="word">Radiant</p></li>
+      </ul>
+    </li>
+    <li class="group" aria-label="City and western">
+      <p class="mono ghead" aria-hidden="true"><span>C</span>City &amp; western</p>
+      <ul class="grow">
+      <li class="shot" style="--ar:1125/1500"><button class="fr-btn" type="button" data-full="assets/photos/green-shirt-1600.webp" data-word="Wistful" aria-label="Enlarge frame 6, Wistful">
+        <span class="mat"><span class="fm"><img src="assets/photos/green-shirt-rail.webp" width="570" height="760" loading="lazy" decoding="async" alt="Della in a green floral shirt at a restaurant table, eyes lowered, lost in a quiet thought."></span></span></button>
+        <p class="mono cap">FR. 06</p><p class="word">Wistful</p></li>
+      <li class="shot" style="--ar:1125/1500"><button class="fr-btn" type="button" data-full="assets/photos/blue-dress-1600.webp" data-word="Unbothered" aria-label="Enlarge frame 7, Unbothered">
+        <span class="mat"><span class="fm"><img src="assets/photos/blue-dress-rail.webp" width="570" height="760" loading="lazy" decoding="async" alt="Della in a royal blue dress, reclining on a hotel bed with one hand in her hair, calm and unbothered."></span></span></button>
+        <p class="mono cap">FR. 07</p><p class="word">Unbothered</p></li>
+      <li class="shot" style="--ar:1242/1552"><button class="fr-btn" type="button" data-full="assets/photos/kitchen-1600.webp" data-word="Lost in thought" aria-label="Enlarge frame 8, Lost in thought">
+        <span class="mat"><span class="fm"><img src="assets/photos/kitchen-rail.webp" width="608" height="760" loading="lazy" decoding="async" alt="Della in a black halter dress sitting on the floor by a window, holding a wine glass, a bottle and plates of food beside her, gazing off to one side."></span></span></button>
+        <p class="mono cap">FR. 08</p><p class="word">Lost in thought</p></li>
+      </ul>
+    </li>
   </ul>
 </section>
 
@@ -233,7 +254,7 @@
       </div>
     </li>
 
-    <li class="clip" data-kind="drive" data-drive="1JzuvHwbW107GGEgEe-f7tQGVp4_1A1zK" data-lang="Tamil" data-title="Tamil monologue" style="--d:100ms">
+    <li class="clip" data-kind="drive" data-drive="1vb6IYljEpzMHRqsVG76WBq1dD5vlzHbC" data-lang="Tamil" data-title="Tamil monologue" style="--d:100ms">
       <div class="mat"><div class="frame">
         <div class="blackcard" aria-hidden="true"><span>Tamil</span></div>
         <button class="play" type="button" aria-label="Play Tamil monologue, 0:53"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
@@ -244,7 +265,7 @@
       </div>
     </li>
 
-    <li class="clip" data-kind="drive" data-drive="1vb6IYljEpzMHRqsVG76WBq1dD5vlzHbC" data-lang="English" data-title="English, British accent" style="--d:200ms">
+    <li class="clip" data-kind="drive" data-drive="1JzuvHwbW107GGEgEe-f7tQGVp4_1A1zK" data-lang="English" data-title="English, British accent" style="--d:200ms">
       <div class="mat"><div class="frame">
         <div class="blackcard" aria-hidden="true"><span>English</span></div>
         <button class="play" type="button" aria-label="Play English, British accent, 0:10"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>

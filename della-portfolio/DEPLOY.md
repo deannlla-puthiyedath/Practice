@@ -13,10 +13,9 @@ The `sources` folder has your original photos. Never upload that one — the pho
 
 ## Please check these before you share the link
 1. **Malayalam and Hindi text** (the two tabs under "Who she is"). Claude wrote it as a first draft. It needs your eyes.
-2. **The two Drive videos Claude matched by guess** (it could not open them):
-   - Slate 02, *Tamil monologue* is `IMG_0392.MOV` (the 103 MB file, matched because it is the long one).
-   - Slate 03, *British accent* is `10cfcb15…mov`.
-   Tap each one on your phone. If one is wrong, tell Claude which video it should be.
+2. **Two Drive videos, one confirmed and one a guess** (Claude cannot open videos):
+   - Slate 02, *Tamil monologue* is `10cfcb15…mov`, the random-letter file you pointed to. Confirmed by you.
+   - Slate 03, *British accent* is `IMG_0392.MOV`. This one is a **guess**: it is the only video left that is not otherwise used. Tap it on your phone. If it is wrong, tell Claude which video it should be.
 3. **Slate 06, the modelling video** is the 53-second "details in Malayalam" video. It is saved on the website itself, not on Drive, so it plays with the site's own controls. Its length (0:53) is the same as the Tamil monologue you listed. If you meant them to be the same video, tell Claude.
 4. **The eight "What she brings" cards.** Claude wrote the sentences from the facts you gave. Read them once and change anything that does not sound like you.
 
