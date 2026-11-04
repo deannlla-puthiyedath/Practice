@@ -29,4 +29,6 @@ The `sources` folder has your original photos. Never upload that one — the pho
 - The website tracks nothing. No phone number or home address appears anywhere.
 
 ## Contact
-The email link on the last screen opens a message to hello@dellaantony.com with deannlla@gmail.com copied in (cc). The Gmail address is inside the link, not written on the page.
+The last screen shows hello@dellaantony.com as the main contact and deannlla@gmail.com as an alternate. The email link on the last screen opens a message to hello@dellaantony.com with deannlla@gmail.com copied in (cc). The Gmail address is inside the link, not written on the page.
+
+**WhatsApp number:** left off the page on purpose. A phone number on a page anyone can forward is easy to copy and misuse. If someone asks for it, you can share it privately in a reply.
