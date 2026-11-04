@@ -1,34 +1,28 @@
 #!/usr/bin/env bash
-# Rebuilds every web asset in site/ from sources/. Strips ALL metadata (EXIF/GPS) on the way.
+# Rebuilds every web image in site/ from sources/. Strips ALL metadata (EXIF/GPS) on the way.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-S=sources/stills; O=site/assets/stills
-# FR number : source file  (grid order)
-declare -a MAP=( "01:Windy_fortkochi.jpg" "02:Sari1.JPG" "03:Toronto.JPG" "04:Biennale_weekend.jpg" "05:IMG_4865.JPG" "06:Sari2.JPG" )
-: > tools/manifest.txt
-for m in "${MAP[@]}"; do
-  n="${m%%:*}"; f="${m#*:}"
-  convert "$S/$f" -auto-orient -strip -resize '1600x1600>' -quality 80 -define webp:method=6 "$O/$n-lg.webp"
-  convert "$S/$f" -auto-orient -strip -resize '800x>'      -quality 78 -define webp:method=6 "$O/$n-sm.webp"
-  convert "$S/$f" -auto-orient -strip -resize '800x>'      -quality 80 -interlace Plane       "$O/$n-sm.jpg"
-  echo "$n $f lg=$(identify -format '%wx%h' $O/$n-lg.webp) sm=$(identify -format '%wx%h' $O/$n-sm.webp)" >> tools/manifest.txt
-done
-# Hero: tight 4:5 crop around her face from Sari2
-H=site/assets/hero
-convert "$S/Sari2.JPG" -auto-orient -strip -crop 1018x1290+224+365 +repage -quality 82 -define webp:method=6 "$H/hero-lg.webp"
-convert "$S/Sari2.JPG" -auto-orient -strip -crop 1018x1290+224+365 +repage -resize '800x>' -quality 80 -define webp:method=6 "$H/hero-sm.webp"
-convert "$S/Sari2.JPG" -auto-orient -strip -crop 1018x1290+224+365 +repage -resize '800x>' -quality 80 "$H/hero-sm.jpg"
-echo "hero lg=$(identify -format '%wx%h' $H/hero-lg.webp) sm=$(identify -format '%wx%h' $H/hero-sm.webp)" >> tools/manifest.txt
-# Clips: H.264 MP4 (<8 MB, 9:16 kept, faststart) + poster JPG, for any local clip present in sources/clips
-for c in sources/clips/*; do
-  b="$(basename "$c")"; stem="${b%.*}"
-  case "$stem" in tamil-monologue|british-accent)
-    ffmpeg -v error -y -i "$c" -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart "site/assets/clips/$stem.mp4"
-    echo "clip $stem $(du -h site/assets/clips/$stem.mp4 | cut -f1)" >> tools/manifest.txt ;;
-  esac
-done
-# Poster for the Hindi Drive-embed card (frame at 10 s, calm, eyes to camera)
-ffmpeg -v error -y -ss 10 -i sources/clips/Monologue-Hindi.MOV -frames:v 1 -q:v 3 site/assets/clips/hindi-monologue.jpg
-# Poster for the Tamil intro card (a still you supplied)
-convert sources/clips/tamil-intro-still.png -strip -resize '600x>' -quality 82 -interlace Plane site/assets/clips/tamil-intro.jpg
+V=sources/v2; O=site/assets/photos; mkdir -p "$O"; : > tools/manifest.txt
+conv() { # name  source  [crop geometry]
+  local n="$1" src="$2" crop="${3:-}"
+  local pre=(-auto-orient -strip); [ -n "$crop" ] && pre+=(-crop "$crop" +repage)
+  convert "$src" "${pre[@]}" -resize '1600x1600>' -quality 80 -define webp:method=6 "$O/$n-1600.webp"
+  convert "$src" "${pre[@]}" -resize '800x>'      -quality 78 -define webp:method=6 "$O/$n-800.webp"
+  echo "$n 1600=$(identify -format '%wx%h' $O/$n-1600.webp) 800=$(identify -format '%wx%h' $O/$n-800.webp)" >> tools/manifest.txt
+}
+conv hero        $V/hero.jpg
+conv green-shirt $V/green-shirt.jpg
+conv saree       $V/saree.jpg
+conv baby        $V/baby-screenshot.jpg 1125x1125+0+437     # crops the phone screen away
+conv building    $V/building.jpg
+conv blue-dress  $V/blue-dress.jpg
+conv kitchen     $V/kitchen-full.jpg   1242x1200+0+0         # stops above the plates, keeps the wine glass
+# Optional artwork: processed only if you've supplied them
+[ -f $V/painting.jpg ] && { mkdir -p site/assets/bg; convert $V/painting.jpg -strip -resize '800x>' -quality 78 -define webp:method=6 site/assets/bg/painting-800.webp; }
+[ -f $V/rose.jpg ]     && conv rose $V/rose.jpg
+# Posters for the Drive-embed cards
+P=site/assets/clips
+ffmpeg -v error -y -ss 10 -i sources/clips/Monologue-Hindi.MOV -frames:v 1 -q:v 3 $P/hindi-monologue.jpg
+convert sources/clips/tamil-intro-still.png -strip -resize '600x>' -quality 82 -interlace Plane $P/tamil-intro.jpg
+convert sources/stills/Sari1.JPG -auto-orient -strip -resize '600x>' -quality 82 -interlace Plane $P/malayalam-song.jpg
 cat tools/manifest.txt

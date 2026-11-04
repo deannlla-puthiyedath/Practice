@@ -10,7 +10,7 @@
   /* ── 1. Title sequence: black → typed slate line → name → languages → slate ── */
   async function titleSequence() {
     const on = k => $$('[data-in="' + k + '"]').forEach(el => el.classList.add('on'));
-    if (reduce) { ['typed', 'img', 'name', 'langs', 'meta'].forEach(on); return; }
+    if (reduce) { ['typed', 'img', 'name', 'line', 'langs', 'meta'].forEach(on); return; }
 
     const typed = $('#typed'), out = $('.typed-out', typed), text = typed.dataset.text;
     out.textContent = '';
@@ -21,6 +21,7 @@
     setTimeout(() => on('name'), 650);     // name fades in, tracking tightens over 2 s
     for (const ch of text) { out.textContent += ch; await wait(26 + Math.random() * 20); }
     typed.classList.remove('typing');
+    await wait(300);  on('line');
     await wait(900);  on('langs');
     await wait(500);  on('meta');
   }
@@ -28,6 +29,8 @@
   /* ── 2. Scroll reveals ── */
   function reveals() {
     const els = $$('.reveal');
+    // Browsers with scroll-driven animations (animation-timeline) handle this in CSS
+    if (window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')) return;
     if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
     const io = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
@@ -52,7 +55,7 @@
   /* ── 4. Lightbox: arrows, swipe, Esc ── */
   function lightbox() {
     const dlg = $('#lb'), img = $('#lb-img'), count = $('#lb-count');
-    const btns = $$('.fr-btn'), total = btns.length;
+    const btns = $$('.shot .fr-btn'), total = btns.length;
     let i = 0, opener = null;
     const pad = n => String(n).padStart(2, '0');
     const show = n => {
@@ -60,7 +63,7 @@
       const b = btns[i];
       img.src = b.dataset.full;
       img.alt = $('img', b).alt;
-      count.textContent = 'FR. ' + pad(i + 1) + ' / ' + pad(total);
+      count.textContent = 'FR. ' + pad(i + 1) + ' / ' + pad(total) + ' — ' + b.dataset.word.toUpperCase();
     };
     const open = n => {
       opener = btns[n]; show(n);
@@ -87,6 +90,34 @@
       else if (e.target === dlg || e.target.classList.contains('lb-stage')) close();   // tap on black closes
     });
     dlg.addEventListener('pointercancel', () => { x0 = y0 = null; });
+  }
+
+  /* ── 4b. Biodata tabs (English / മലയാളം / हिंदी) ── */
+  function tabs() {
+    const tabs = $$('.tabs [role="tab"]');
+    const pick = t => {
+      tabs.forEach(x => {
+        const on = x === t;
+        x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1;
+        $('#' + x.getAttribute('aria-controls')).hidden = !on;
+      });
+    };
+    tabs.forEach((t, k) => {
+      t.addEventListener('click', () => pick(t));
+      t.addEventListener('keydown', e => {
+        const n = { ArrowRight: k + 1, ArrowLeft: k - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (n === undefined) return;
+        e.preventDefault(); const nt = tabs[(n + tabs.length) % tabs.length]; pick(nt); nt.focus();
+      });
+    });
+  }
+
+  /* ── 4c. Rail arrows (desktop; phones just swipe) ── */
+  function rails() {
+    $$('.rail-nav button').forEach(b => b.addEventListener('click', () => {
+      const r = d.getElementById(b.dataset.rail), step = Math.max(240, r.clientWidth * 0.7);
+      r.scrollBy({ left: step * Number(b.dataset.dir), behavior: reduce ? 'auto' : 'smooth' });
+    }));
   }
 
   /* ── 5. Voices ── */
@@ -172,5 +203,5 @@
     });
   }
 
-  titleSequence(); reveals(); nav(); lightbox(); voices(); copy();
+  titleSequence(); reveals(); nav(); lightbox(); tabs(); rails(); voices(); copy();
 })();

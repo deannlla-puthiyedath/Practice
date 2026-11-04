@@ -5,24 +5,31 @@
 You only ever need the **`site` folder** (or the zip). Everything the website needs is inside it.
 The `sources` folder has your original photos. Never upload that one — the phone left hidden location data in them.
 
-## How to update the website after a change
-1. Unzip the new `della-antony-site.zip`. You get one folder.
+## How to put a new version online
+1. Unzip `della-antony-site.zip`. You get one folder.
 2. Go to **app.netlify.com**, open your site, click the **Deploys** tab.
 3. Drag the folder onto the box that says *"Drag and drop your project folder here"*.
 4. Wait a few seconds. The same address now shows the new version.
 
-## Still open
-- **Malayalam song card:** it shows a plain black card with the word "Malayalam". If you want your face there, take a screenshot from that video and put it in the same Drive folder (like you did for Tamil).
-- **English card (British accent):** it plays the video `10cfcb15…mov`. Tap it once on your phone to make sure it is the right one. If not, tell me which video it should be.
-- **Video lengths:** the English, Tamil and song cards don't show a length. Tell me the lengths (like `0:41`) if you want them shown.
+## Waiting on two pictures (the site works without them)
+- **The sunset painting** (the one made of squares). It becomes the background of the whole page.
+- **The rose artwork.** It goes in the painter card next to the call sheet.
+Put both in the same Drive folder as the others. Until then the page has a plain dark background and a text-only painter card.
 
-## WhatsApp preview picture
-Already set to your address. WhatsApp remembers old previews, so if you tested an earlier link, add `?v=2` at the end of the link when you test again.
+## Please check these before you share the link
+1. **Malayalam and Hindi text** (the two tabs under "Who she is"). Claude wrote it as a first draft. It needs your eyes.
+2. **The two Drive videos Claude matched by guess** (it could not open them):
+   - Slate 02, *Tamil monologue* is `IMG_0392.MOV` (the 103 MB file, matched because it is the long one).
+   - Slate 03, *British accent* is `10cfcb15…mov`.
+   Tap each one on your phone. If one is wrong, tell Claude which video it should be.
+3. **The eight "What she brings" cards.** Claude wrote the sentences from the facts you gave. Read them once and change anything that does not sound like you.
+
+## What changed from your handoff (so nothing surprises you)
+- Break dance (basic) is no longer listed, because it is not in your corrected skills.
+- The Tamil monologue and British accent play from Drive, not from files on the site, because Claude could not get the files themselves.
+- The blue-dress photo is shown as you sent it (tilted). Straightening it would cut into the picture; Claude can try if you want.
 
 ## Privacy
 - Google and other search sites are told not to list it. Only people who have the link can find it.
 - It is not password-protected: anyone you send the link to can forward it.
 - The website tracks nothing. No phone number or home address appears anywhere.
-
-## Later, if you want `actor.dellaantony.com`
-Netlify → your site → Domain management → Add a domain. It will give you one line to add where you bought `dellaantony.com`. Ask me and I'll walk you through it.
