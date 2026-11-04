@@ -20,3 +20,7 @@ tangent/__pycache__/
 tangent/*.wav
 reel2/reel2_quick.mp4
 reel2/reel2_quick_music.mp4
+
+# Della portfolio: originals carry GPS/phone metadata; never commit them
+della-portfolio/sources/
+della-portfolio/*.zip

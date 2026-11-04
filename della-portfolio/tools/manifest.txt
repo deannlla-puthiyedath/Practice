@@ -1,0 +1,7 @@
+01 Windy_fortkochi.jpg lg=853x1280 sm=800x1200
+02 Sari1.JPG lg=900x1600 sm=800x1422
+03 Toronto.JPG lg=769x961 sm=769x961
+04 Biennale_weekend.jpg lg=853x1280 sm=800x1200
+05 IMG_4865.JPG lg=900x1600 sm=800x1422
+06 Sari2.JPG lg=1201x1600 sm=800x1066
+hero lg=1018x1290 sm=800x1014
