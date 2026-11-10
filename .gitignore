@@ -26,3 +26,5 @@ reel3/*.mp4
 reel3/frames/
 reel3/__pycache__/
 reel3/render.log
+reel3/check_[0-9]*.jpg
+reel3/voice_trim.wav
