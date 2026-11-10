@@ -25,3 +25,4 @@ reel3/*.wav
 reel3/*.mp4
 reel3/frames/
 reel3/__pycache__/
+reel3/render.log
