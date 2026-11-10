@@ -20,3 +20,8 @@ tangent/__pycache__/
 tangent/*.wav
 reel2/reel2_quick.mp4
 reel2/reel2_quick_music.mp4
+reel3/*.m4a
+reel3/*.wav
+reel3/*.mp4
+reel3/frames/
+reel3/__pycache__/
