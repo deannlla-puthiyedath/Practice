@@ -33,3 +33,8 @@ reel4/*.wav
 reel4/*.m4a
 reel4/check_*.jpg
 reel4/ref_*.jpg
+reel5/*.mp4
+reel5/*.wav
+reel5/check_*.jpg
+reel5/render.log
+reel5/__pycache__/
