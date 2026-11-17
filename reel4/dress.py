@@ -40,6 +40,10 @@ def linen(img, k=0.16, seed=7):
     g = a.mean(2, keepdims=True); a = g + (a - g) * 0.88 + 0.03       # slightly chalky, washed colour
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8))
 
+def dilate(m, r):
+    """Fast dilation: blur then threshold (MaxFilter is far too slow at this size)."""
+    return m.filter(ImageFilter.BoxBlur(r)).point(lambda v: 255 if v > 8 else 0)
+
 def _m():
     return Image.new("L", (FW * S, FH * S), 0)
 
@@ -70,7 +74,7 @@ class Canvas:
     def fill(self, mask, col, outline=True, ow=3):
         src = col if isinstance(col, Image.Image) else Image.new("RGB", self.rgb.size, col)
         if outline:
-            big = mask.filter(ImageFilter.MaxFilter(ow * S * 2 + 1))
+            big = dilate(mask, ow * S)
             self.rgb.paste(Image.new("RGB", self.rgb.size, OUT), (0, 0), big)
             self.alpha = _union(self.alpha, big)
         self.rgb.paste(src, (0, 0), mask)
@@ -102,10 +106,19 @@ def _folds(c, flare, spin, cx=400, top=470, hem=840):
         x0 = cx + j * 14; x1 = cx + j * 46 * flare + 10 * np.sin(spin * 6.28 + j)
         c.line([(x0, top + 40), ((x0 + x1) / 2, (top + hem) / 2 + 30), (x1, hem - 10)], (70, 60, 50), 1.0)
 
+_BIG = None
+def _linen_print(spin):
+    """Linen-textured print, built once, then slid sideways for the twirl."""
+    global _BIG
+    if _BIG is None:
+        _BIG = linen(_print_tile(FW * S * 2, FH * S, 0.0, scale=210 * S))
+    tw = 2 * 210 * S
+    dx = int((spin % 1) * tw)
+    return _BIG.crop((dx, 0, dx + FW * S, FH * S))
+
 def figure(view="front", flare=1.0, spin=0.0):
     c = Canvas()
-    pr = _print_tile(FW * S, FH * S, shift=spin, scale=210 * S)
-    pr = linen(pr)
+    pr = _linen_print(spin)
     back = view == "back"
     # legs and heels
     for side, x_hip, x_ank in [(-1, 380, 372), (1, 420, 440)]:
@@ -165,7 +178,7 @@ def figure(view="front", flare=1.0, spin=0.0):
     rgb = c.rgb.resize((FW, FH), Image.LANCZOS); a = c.alpha.resize((FW, FH), Image.LANCZOS)
     fig = rgb.convert("RGBA"); fig.putalpha(a)
     pad = Image.new("RGBA", (FW + 30, FH + 30), (0, 0, 0, 0))
-    pad.paste(Image.new("RGBA", (FW, FH), (252, 250, 244, 255)), (15, 15), a.filter(ImageFilter.MaxFilter(17)))
+    pad.paste(Image.new("RGBA", (FW, FH), (252, 250, 244, 255)), (15, 15), dilate(a, 8))
     pad.alpha_composite(fig, (15, 15))
     return pad.crop(pad.getbbox())
 
