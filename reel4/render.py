@@ -168,39 +168,39 @@ def elder(kind, laugh=False):
     if mum:   # leggings over the legs
         c.fill(_union(_limb([(380, 760), (374, 960), (374, 1290)], 64, 26), _limb([(420, 760), (426, 960), (430, 1290)], 64, 26)), WHITE)
     # arms
-    ax = 0 if mum else 18                                                                   # Dad is broader
+    ax = 0 if mum else 30                                                                   # Dad is broader
     c.fill(_limb([(338 - ax / 2, 312), (322 - ax, 470), (304 - ax, 640)], 34 + ax / 2, 22 + ax / 3), SKIN); c.fill(_ell(302 - ax, 660, 16 + ax / 4, 24), SKIN)
     c.fill(_limb([(462 + ax / 2, 312), (478 + ax, 470), (496 + ax, 640)], 34 + ax / 2, 22 + ax / 3), SKIN); c.fill(_ell(498 + ax, 660, 16 + ax / 4, 24), SKIN)
     if mum:
-        kurti = (214, 170, 52)
-        c.fill(_union(_poly([(338, 296), (462, 296), (470, 560), (500, 960), (300, 960), (330, 560)]),
-                      _limb([(340, 310), (326, 420)], 42, 34), _limb([(460, 310), (474, 420)], 42, 34)), kurti)
-        c.line([(400, 300), (400, 380)], (150, 110, 30), 3)                                   # placket
-        c.line([(306, 950), (494, 950)], RED, 6)                                              # hem border
-        c.line([(330, 700), (318, 960)], OUT, 2); c.line([(470, 700), (482, 960)], OUT, 2)  # side slits
-        c.fill(_poly([(356, 296), (392, 296), (470, 640), (446, 660)]), GRN)                  # dupatta
+        kurti = (196, 40, 44)                                                                 # simple red kurti
+        c.fill(_union(_poly([(334, 296), (466, 296), (474, 380), (452, 480), (482, 640), (492, 960), (308, 960), (318, 640), (348, 480), (326, 380)]),
+                      _limb([(338, 310), (324, 440)], 42, 34), _limb([(462, 310), (476, 440)], 42, 34)), kurti)
+        c.line([(380, 300), (400, 340), (420, 300)], (120, 20, 24), 3)                        # V neck
+        c.line([(320, 760), (310, 960)], OUT, 2); c.line([(480, 760), (490, 960)], OUT, 2)  # side slits
         for y in (612, 626): c.line([(292, y), (314, y)], GOLD, 5)                            # bangles
     else:
         lungi = Image.new("RGB", c.rgb.size, PURP); dl = ImageDraw.Draw(lungi)
         for x in range(0, c.rgb.size[0], 56): dl.rectangle((x, 0, x + 20, c.rgb.size[1]), fill=GRN)
         for y in range(0, c.rgb.size[1], 56): dl.rectangle((0, y, c.rgb.size[0], y + 14), fill=(232, 110, 40))
-        c.fill(_poly([(318, 560), (482, 560), (490, 1260), (310, 1260)]), lungi)
+        c.fill(_poly([(306, 580), (494, 580), (498, 1260), (302, 1260)]), lungi)
         c.line([(400, 562), (412, 640)], OUT, 3)                                              # knot fold
         shirt = (176, 206, 226)
-        c.fill(_union(_poly([(330, 296), (470, 296), (490, 450), (494, 540), (484, 612), (316, 612), (306, 540), (310, 450)]),
-                      _limb([(334, 308), (310, 420)], 52, 42), _limb([(466, 308), (490, 420)], 52, 42)), shirt)
-        c.line([(400, 300), (400, 608)], (120, 140, 160), 2)
+        c.fill(_union(_poly([(326, 296), (474, 296), (506, 430), (518, 530), (500, 630), (300, 630), (282, 530), (294, 430)]),
+                      _limb([(330, 308), (300, 420)], 60, 48), _limb([(470, 308), (500, 420)], 60, 48)), shirt)   # round tummy
+        c.line([(400, 300), (400, 626)], (120, 140, 160), 2)
         for y in range(340, 600, 50): c.fill(_ell(408, y, 4, 4), WHITE, outline=False)
-        c.line([(504, 612), (526, 612)], (60, 50, 40), 7)                                     # watch
+        c.line([(516, 612), (540, 612)], (60, 50, 40), 7)                                     # watch
     c.fill(_poly([(384, 225), (416, 225), (420, 300), (380, 300)]), SKIN, outline=False)
-    c.fill(_ell(400, 170, 52, 66), SKIN)
-    if mum:   # bun like the girl's, a little grey at the temple
-        c.fill(_poly([(344, 160), (352, 118), (400, 96), (448, 118), (456, 160), (430, 128), (370, 128)]), HAIR)
-        c.fill(_ell(400, 100, 34, 28), HAIR)
-        c.line([(356, 150), (370, 122)], (150, 146, 140), 4)
+    if mum:   # straight hair down to the shoulders, one soft grey strand
+        c.fill(_poly([(340, 150), (352, 110), (400, 98), (448, 110), (460, 150), (466, 330), (334, 330)]), HAIR)
+        c.fill(_ell(400, 170, 52, 66), SKIN)
+        c.fill(_poly([(346, 166), (354, 116), (400, 102), (446, 116), (454, 166), (430, 122), (400, 116)]), HAIR)
+        c.line([(440, 124), (452, 200)], (150, 146, 140), 3)
         c.fill(_ell(400, 140, 4, 4), RED, outline=False)
         for ex in (348, 452): c.fill(_ell(ex, 206, 5, 5), GOLD, outline=False)
-    else:
+    else:     # rounder, cuter face with soft cheeks
+        c.fill(_ell(400, 174, 60, 66), SKIN)
+        for ex in (358, 442): c.fill(_ell(ex, 200, 13, 8), (200, 110, 90), outline=False)
         c.fill(_poly([(346, 156), (352, 114), (400, 100), (448, 114), (454, 156), (432, 126), (368, 126)]), HAIR)
         for ex in (350, 450): c.line([(ex, 128), (ex, 154)], (150, 146, 140), 6)             # greying temples
         c.line([(378, 200), (400, 195), (422, 200)], HAIR, 7)                                 # moustache
@@ -387,7 +387,7 @@ PAINT = Image.open("reverie.jpg").convert("RGB")
 # every line copied word for word from the book, in story order
 CARDS = [(0.3, 3.2, "we soar high into our imaginations", PURP), (3.6, 7.9, "We have sailed so far", PURP),
          (8.4, 13.7, "we want to run home,", RED), (14.1, 17.2, "wherever it may be.", PURP),
-         (18.0, 23.3, "and then they all go home together.", PURP)]
+         (18.0, 23.3, "and we all go home together.", PURP)]
 os.chdir(R2)
 CARD_IMG = [lib.ransom(s, ink, size=74, seed=i * 5 + 3, max_w=720) for i, (_, _, s, ink) in enumerate(CARDS)]
 END_TXT = lib.ransom("Wear art, not a logo.", PURP, size=74, seed=41, max_w=720)
@@ -472,7 +472,7 @@ def shot_court(t):                                    # 17.4 - 23.6
     u = t - 17.4
     img = courtyard_live(COURT.copy(), t).convert("RGBA")
     handed = u > 2.0; kiss = ramp(u, 2.8, 3.6) * (1 - ramp(u, 5.0, 5.8))
-    paste(img, DAD_L if (u > 3.4 and int(u * 6) % 2) else DAD, 880, 1262, scale=0.67)
+    paste(img, DAD_L if (u > 3.4 and int(u * 6) % 2) else DAD, 890, 1236, scale=0.70)
     paste(img, MUM, 670, 1300, scale=0.62)
     gx = lerp(150, 420, ramp(u, 0.0, 1.6)) + 40 * kiss
     g = girl("front", q(1.05 + 0.05 * math.sin(u * 4), 0.05), 0.0)
