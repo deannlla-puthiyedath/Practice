@@ -39,6 +39,37 @@ def bell(m):
 def shaker():
     n = int(SR * 0.08); return rng.standard_normal(n) * np.exp(-np.arange(n) / (SR * 0.015)) * 0.25
 
+# ---- Indian instruments for the opening (0 - 7 s): sitar, tabla, tanpura drone
+def sitar(m, dur=1.4):
+    """Bright plucked string with a buzzing jawari bridge and a small upward meend (slide)."""
+    y = pluck(m, dur, 0.9)
+    y = np.tanh(3.0 * y) * 0.6 + 0.4 * y                       # jawari buzz
+    t = np.arange(len(y)) / SR
+    sym = sum(np.sin(2 * np.pi * hz(m + k) * t) * np.exp(-t * 2.5) for k in (12, 19)) * 0.08   # sympathetic strings
+    return y + sym
+
+def tabla(kind):
+    t = np.arange(int(SR * 0.6)) / SR
+    if kind == "ge":                                            # low bayan, pitch bends down
+        f = 95 + 60 * np.exp(-t * 18)
+        return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 6) * 0.9
+    if kind == "na":                                            # ringing dayan
+        return (np.sin(2 * np.pi * 587 * t) + 0.5 * np.sin(2 * np.pi * 587 * 2.1 * t)) * np.exp(-t * 14) * 0.5
+    return rng.standard_normal(len(t)) * np.exp(-t * 60) * 0.35  # "te": dry slap
+
+def tanpura(dur):
+    """Drone on A, D, D, low D, each string fading in turn."""
+    out_ = np.zeros(int(SR * dur)); t = np.arange(len(out_)) / SR
+    for k, m in enumerate([45, 50, 50, 38] * int(dur / 2.4 + 1)):
+        t0 = k * 0.6
+        if t0 >= dur: break
+        tt = np.clip(t - t0, 0, None)
+        out_ += sum(np.sin(2 * np.pi * hz(m) * h * tt) / h ** 1.2 for h in range(1, 9)) * np.exp(-tt * 0.9) * (t >= t0) * 0.12
+    env = np.minimum(1, t / 0.3) * np.clip((dur - t) / 1.0, 0, 1)
+    return out_ * env
+
+INDIAN_END = 7.0
+
 _cache = {}
 def P(m, dur=1.2, b=0.5):
     k = (m, dur, b)
@@ -49,18 +80,27 @@ D, G, A, Bm = [50, 57, 62, 66], [43, 55, 59, 62], [45, 57, 61, 64], [47, 54, 59,
 prog = [D, G, Bm, A]
 
 # pad underneath, chord per 2 bars
-t = 0.0; k = 0
+t = BEAT * 8 * 2; k = 2
 while t < 28.4:
     ch = prog[k % 4]; place(pad([c + 12 for c in ch[1:]], BEAT * 8 + 0.8, 0.5), t, 0, 0.35); t += BEAT * 8; k += 1
 place(pad([62, 66, 69, 74], 4.5, 0.6), 28.2, 0, 0.45)                 # end chord
 
 # 0 - 3.4 twirl: rising arpeggio
-for i, m in enumerate([62, 66, 69, 74, 78, 81, 86]): place(P(m), 0.15 + i * BEAT / 2, (i % 2) * 0.4 - 0.2, 0.5)
+place(tanpura(INDIAN_END + 1.0), 0.0, 0, 0.55)
+for i, m in enumerate([62, 66, 69, 74, 78, 81, 86]): place(sitar(m), 0.15 + i * BEAT / 2, (i % 2) * 0.4 - 0.2, 0.45)
+# tabla theka under the opening: dha dhin dhin dha | dha dhin dhin dha
+for b in range(int(INDIAN_END / (BEAT / 2))):
+    tt = 0.15 + b * BEAT / 2
+    if tt > INDIAN_END - 0.2: break
+    pat = b % 8
+    if pat in (0, 3, 4, 7): place(tabla("ge"), tt, -0.15, 0.6)
+    place(tabla("na" if pat in (0, 1, 2, 3, 4, 7) else "te"), tt, 0.2, 0.45)
 # 3.4 - 8.2 walk: gentle melody in eighths
 mel = [74, 76, 78, 76, 74, 71, 69, 71, 74, 76, 78, 81, 78, 76, 74, 76]
 for i, m in enumerate(mel):
     tt = 3.4 + i * BEAT / 2
-    if tt < 8.2: place(P(m, 0.9), tt, -0.25, 0.42)
+    if tt < INDIAN_END: place(sitar(m, 1.0), tt, -0.25, 0.4)
+    elif tt < 8.2: place(P(m, 0.9), tt, -0.25, 0.42)
 place(bell(86), 5.8, 0.3, 0.25)                                         # the bag
 # 8.2 - 13.8 ride: faster sixteenths, shaker
 mel2 = [78, 81, 83, 81, 78, 76, 74, 76]
