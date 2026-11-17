@@ -99,16 +99,20 @@ def pizz(m, vel=0.6, ring=1.0):
 def spiccato(m, vel=0.6, dur=0.17):
     return arco(m, max(dur * 2.2, 0.3), vel * 0.85, 0.6, rel=0.18)
 H = BEAT / 2
-# 0 - 3.4 twirl: a light pizzicato rise into a held note
-for i, m in enumerate([62, 66, 69, 74, 78, 81]): place(pizz(m, .5, 0.9), 0.15 + i * H, 0.3 * (-1) ** i)
-place(arco(86, 1.6, .5, 1.0, scoop=0.3, rel=.6), 0.15 + 6 * H, 0.1)
-# 3.4 - 8.2 bakery: walking spiccato tune over plucked bass
-mel = [74, 76, 78, 76, 74, 71, 69, 71, 74, 76, 78, 81, 78, 76, 74, 76]
-for i, m in enumerate(mel):
-    tt = 3.4 + i * H
-    if tt < 8.1: place(spiccato(m, .5), tt, 0.2 * (-1) ** i)
-    if i % 4 == 0 and tt < 8.1: place(pizz([50, 55, 47, 57][(i // 4) % 4], .5, 0.9), tt, -0.4)
-place(pizz(90, .45, 1.2), 5.8, 0.4)                                    # the bag appears
+# 0 - 8.2 WALTZ (twirl + bakery): 3/4, five bars of 1.64 s. Full D major with G and C#, so it never sounds pentatonic.
+BAR = 1.64; B3 = BAR / 3
+mel_w = [[(74, 2), (76, 1)], [(79, 2), (78, 1)], [(76, 1), (73, 1), (76, 1)], [(81, 3)], [(79, 1), (78, 1), (73, 1)]]
+roots = [62, 55, 57, 62, 57]                                   # D  G  A7  D  A7, the "oom" on beat one
+pahs = [(66, 69), (62, 67), (61, 67), (66, 69), (61, 67)]      # the "pah pah" on beats two and three
+for b in range(5):
+    t0 = 0.1 + b * BAR
+    place(arco(roots[b], B3 * 0.9, .42, 0.6, rel=.2), t0, -0.35)
+    for k in (1, 2):
+        for m in pahs[b]: place(arco(m, B3 * 0.55, .24, 0.4, rel=.12), t0 + k * B3, 0.25)
+    tt = t0
+    for m, nb in mel_w[b]:
+        place(arco(m + 12 if m < 72 else m, nb * B3 - 0.04, .5, 1.0, scoop=0.15 if nb > 1 else 0, rel=.3), tt, 0.1)
+        tt += nb * B3
 # 8.2 - 13.8 ride: quick sixteenth spiccato, the sea going by
 mel2 = [78, 81, 83, 81, 78, 76, 74, 76]
 i = 0; tt = 8.2
