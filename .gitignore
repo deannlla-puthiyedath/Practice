@@ -28,3 +28,8 @@ reel3/__pycache__/
 reel3/render.log
 reel3/check_[0-9]*.jpg
 reel3/voice_trim.wav
+reel4/*.mp4
+reel4/*.wav
+reel4/*.m4a
+reel4/check_*.jpg
+reel4/ref_*.jpg
