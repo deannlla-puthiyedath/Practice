@@ -255,21 +255,35 @@ def shot_house(t):                                    # 32 - 36: out of the cab,
     paste(img, g, lerp(380, 540, k), lerp(1500, 1190, k) + 8 * abs(math.sin(u * 8)), scale=lerp(0.66, 0.38, k))
     return img
 
+def _dad_back():
+    """Dad seen from behind: the approved figure with the back of his head (hair) and no buttons."""
+    im = DAD_UP.copy(); d = ImageDraw.Draw(im)
+    d.ellipse((57, 8, 231, 206), fill=(34, 24, 22), outline=OUT, width=3)
+    d.rectangle((138, 262, 172, 640), fill=(176, 206, 226))
+    return im
+DAD_BACK = _dad_back()
+
 @lru_cache(maxsize=64)
 def lifted(step):
-    """Dad holding her up by the waist, the pair as one cut-out; step 0..23 around the twirl."""
+    """Dad holding her up by the waist; step 0..23 is one full 360 turn.
+    Near side: her back to us, Dad's laughing face beside her. Far side: her face, Dad's back."""
     ang = step / 24 * 2 * math.pi
-    g = girl("front", 1.4, (step / 24) % 1)
-    dad = DAD_UP
+    near = math.cos(ang) >= 0
+    g = girl("back" if near else "front", 1.4, (step / 24) % 1)
     grp = Image.new("RGBA", (1100, 2100), (0, 0, 0, 0))
     dx0, dy0 = 600, 760                                            # Dad's cut-out (292 x 1249) in the group
     P_ = lambda x, y: (dx0 + x, dy0 + y)
-    gs = g.resize((int(g.width * 0.86), int(g.height * 0.86)), Image.LANCZOS).rotate(-6, expand=True, resample=Image.BICUBIC)
-    wx, wy = P_(-20, 0)                                            # her waist: up beside his head, as in Della's photo
-    grp.alpha_composite(gs, (int(wx - gs.width / 2), int(wy - gs.height * 0.31)))
-    grp.alpha_composite(dad, (dx0, dy0))
+    gs = g.resize((int(g.width * 0.86), int(g.height * 0.86)), Image.LANCZOS).rotate(6 if near else -6, expand=True, resample=Image.BICUBIC)
+    wx, wy = P_(-20, 0)                                            # her waist, up beside his head
+    if near:                                                       # Dad behind, she is nearer to us
+        grp.alpha_composite(DAD_UP, (dx0, dy0))
+        grp.alpha_composite(gs, (int(wx - gs.width / 2), int(wy - gs.height * 0.31)))
+    else:
+        grp.alpha_composite(gs, (int(wx - gs.width / 2), int(wy - gs.height * 0.31)))
+        grp.alpha_composite(DAD_BACK, (dx0, dy0))
     d = ImageDraw.Draw(grp); SK = (228, 188, 156)
-    for pts in ([P_(62, 250), P_(-60, 200), P_(-80, 40)], [P_(230, 250), P_(100, 250), P_(45, 50)]):
+    for pts in ([P_(62, 250), P_(-60, 200), P_(-95, 40)], [P_(230, 250), P_(100, 250), P_(55, 50)]):
+        if near: pts = [pts[-1]]                                  # her body hides his arms; only his hands show at her waist
         for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
             d.line((x0, y0, x1, y1), fill=OUT, width=50)
         for x, y in pts[1:-1]: d.ellipse((x - 25, y - 25, x + 25, y + 25), fill=OUT)
@@ -278,9 +292,9 @@ def lifted(step):
         for x, y in pts[1:-1]: d.ellipse((x - 21, y - 21, x + 21, y + 21), fill=SK)
         hx, hy = pts[-1]
         d.ellipse((hx - 25, hy - 29, hx + 25, hy + 29), fill=SK, outline=OUT, width=4)
-    sx = max(0.3, abs(math.cos(ang)))
+    sx = max(0.25, abs(math.cos(ang)))
     out = grp.resize((max(1, int(grp.width * sx)), grp.height), Image.LANCZOS)
-    if math.cos(ang) < 0: out = out.transpose(Image.FLIP_LEFT_RIGHT)
+    if not near: out = out.transpose(Image.FLIP_LEFT_RIGHT)
     return out
 
 def shot_court(t):                                    # 36 - 44: she runs to Dad; he picks her up and twirls her
@@ -294,7 +308,7 @@ def shot_court(t):                                    # 36 - 44: she runs to Dad
         paste(img, g, lerp(80, 400, k) if u < 1.5 else 400, 1300, scale=0.6)
         return img
     lift = ramp(u, 1.5, 2.2) * (1 - ramp(u, 6.6, 7.2))
-    step = int(((u - 2.0) * 1.0 * 24) % 24) if u > 2.0 and u < 6.6 else 0
+    step = int(round(ramp(u, 2.6, 5.8) * 24)) % 24                # one full 360
     grp = lifted(step)
     paste(img, grp, 560, 1230 - 60 * lift + 6 * math.sin(u * 6), scale=0.66)
     return img
