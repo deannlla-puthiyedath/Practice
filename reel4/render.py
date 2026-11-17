@@ -160,19 +160,20 @@ def elder(kind, laugh=False):
     Dad: a half-sleeve shirt and a checked kaili lungi, a watch."""
     c = Canvas()
     mum = kind == "mum"
+    sk = SKIN if mum else (228, 188, 156)                                                     # Dad: fair skin
     if mum:   # long straight hair falls behind her back, past the waist
-        c.fill(_poly([(338, 150), (352, 108), (400, 96), (448, 108), (462, 150), (484, 600), (452, 640), (348, 640), (316, 600)]), HAIR)
+        c.fill(_poly([(338, 150), (352, 108), (400, 96), (448, 108), (462, 150), (470, 236), (330, 236)]), HAIR)   # behind the head only
     # legs and flat sandals, same construction as the girl
     for side, x_hip, x_ank in [(-1, 380, 374), (1, 420, 430)]:
-        c.fill(_limb([(x_hip, 760), (x_hip + side * 6, 960), (x_ank, 1300)], 62 if mum else 80, 22 if mum else 32), SKIN)
-        c.fill(_poly([(x_ank - 11, 1292), (x_ank + 11, 1292), (x_ank + 22, 1324), (x_ank - 10, 1324)]), SKIN, ow=2)
+        c.fill(_limb([(x_hip, 760), (x_hip + side * 6, 960), (x_ank, 1300)], 62 if mum else 80, 22 if mum else 32), sk)
+        c.fill(_poly([(x_ank - 11, 1292), (x_ank + 11, 1292), (x_ank + 22, 1324), (x_ank - 10, 1324)]), sk, ow=2)
         c.line([(x_ank - 12, 1326), (x_ank + 24, 1326)], (110, 70, 40), 6)
     if mum:   # leggings over the legs
         c.fill(_union(_limb([(380, 760), (374, 960), (374, 1290)], 64, 26), _limb([(420, 760), (426, 960), (430, 1290)], 64, 26)), WHITE)
     # arms
     ax = 0 if mum else 34                                                                   # Dad is broader
-    c.fill(_limb([(338 - ax / 2, 312), (322 - ax, 470), (304 - ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), SKIN); c.fill(_ell(302 - ax, 660, 16 + ax / 3, 24 + ax / 4), SKIN)
-    c.fill(_limb([(462 + ax / 2, 312), (478 + ax, 470), (496 + ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), SKIN); c.fill(_ell(498 + ax, 660, 16 + ax / 3, 24 + ax / 4), SKIN)
+    c.fill(_limb([(338 - ax / 2, 312), (322 - ax, 470), (304 - ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(302 - ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
+    c.fill(_limb([(462 + ax / 2, 312), (478 + ax, 470), (496 + ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(498 + ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
     if mum:
         kurti = (196, 40, 44)                                                                 # simple red kurti
         c.fill(_union(_poly([(334, 296), (466, 296), (474, 380), (452, 480), (482, 640), (492, 960), (308, 960), (318, 640), (348, 480), (326, 380)]),
@@ -193,19 +194,19 @@ def elder(kind, laugh=False):
         c.line([(400, 300), (400, 626)], (120, 140, 160), 2)
         for y in range(340, 600, 50): c.fill(_ell(408, y, 4, 4), WHITE, outline=False)
         c.line([(516, 612), (540, 612)], (60, 50, 40), 7)                                     # watch
-    c.fill(_poly([(384, 225), (416, 225), (420, 300), (380, 300)]), SKIN, outline=False)
+    c.fill(_poly([(384, 225), (416, 225), (420, 300), (380, 300)]), sk, outline=False)
     if mum:   # straight hair down to the shoulders, one soft grey strand
-        c.fill(_ell(400, 170, 52, 66), SKIN)
+        c.fill(_ell(400, 170, 52, 66), sk)
         c.fill(_poly([(346, 166), (354, 116), (400, 102), (446, 116), (454, 166), (430, 122), (400, 116)]), HAIR)
         c.line([(440, 124), (452, 200)], (150, 146, 140), 3)
         c.fill(_ell(400, 140, 4, 4), RED, outline=False)
         for sd in (-1, 1):    # long strands over the front of each shoulder, down to the waist
-            x0 = 400 + sd * 50
-            c.fill(_poly([(x0, 130), (x0 + sd * 14, 200), (x0 + sd * 30, 300), (x0 + sd * 36, 520), (x0 + sd * 10, 540), (x0 + sd * 2, 300), (x0 - sd * 6, 210)]), HAIR)
+            x0 = 400 + sd * 50   # strands start beside the face and fall outward, leaving the neck and chest clear
+            c.fill(_poly([(x0, 130), (x0 + sd * 12, 120), (x0 + sd * 24, 230), (x0 + sd * 44, 300), (x0 + sd * 46, 540), (x0 + sd * 22, 556), (x0 + sd * 20, 316), (x0 + sd * 2, 250)]), HAIR)
         for ex in (348, 452): c.fill(_ell(ex, 206, 5, 5), GOLD, outline=False)
     else:     # rounder, cuter face with soft cheeks
-        c.fill(_poly([(352, 220), (448, 220), (456, 300), (344, 300)]), SKIN, outline=False)   # thick neck
-        c.fill(_ell(400, 180, 80, 78), SKIN)
+        c.fill(_poly([(352, 220), (448, 220), (456, 300), (344, 300)]), sk, outline=False)   # thick neck
+        c.fill(_ell(400, 180, 80, 78), sk)
         c.line([(370, 238), (400, 246), (430, 238)], dress.SKIN_SH, 3)                       # soft double chin
         for ex in (352, 448): c.fill(_ell(ex, 202, 16, 10), (204, 112, 92), outline=False)
         c.fill(_poly([(334, 158), (344, 112), (400, 98), (456, 112), (466, 158), (436, 124), (364, 124)]), HAIR)
