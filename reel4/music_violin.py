@@ -92,6 +92,12 @@ def pizz(m, vel=0.6, ring=1.0):
 SC = [74, 76, 78, 79, 81, 83, 85, 86, 88, 90]               # D major from D5
 
 # ---------------------------------------------------------------- score ----
+# Della: only a bowed violin. No plucked strings anywhere (the pizzicato is gone), no bass plucks.
+def pizz(m, vel=0.6, ring=1.0):
+    if m < 60: return np.zeros(1)                     # drop the low plucked bass entirely
+    return arco(m, 0.55 * ring, vel * 0.8, 0.8, rel=0.35)
+def spiccato(m, vel=0.6, dur=0.17):
+    return arco(m, max(dur * 2.2, 0.3), vel * 0.85, 0.6, rel=0.18)
 H = BEAT / 2
 # 0 - 3.4 twirl: a light pizzicato rise into a held note
 for i, m in enumerate([62, 66, 69, 74, 78, 81]): place(pizz(m, .5, 0.9), 0.15 + i * H, 0.3 * (-1) ** i)
