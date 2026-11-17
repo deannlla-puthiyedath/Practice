@@ -155,41 +155,60 @@ def bag(bread=True):
     return im
 
 def elder(kind, laugh=False):
-    """Mum in a cream and gold set-mundu, Dad in a white shirt and mundu. Same cut-paper sketch style."""
-    c = Canvas(); grey = (120, 116, 112)
-    for x0, x1 in [(380, 372), (420, 440)]:
-        c.fill(_limb([(x0, 1150), (x1, 1300)], 30, 24), SKIN)
-        c.line([(x1 - 16, 1312), (x1 + 20, 1316)], (150, 110, 70), 7)
-    cloth = CREAM if kind == "mum" else WHITE
-    c.fill(_poly([(338, 300), (462, 300), (470, 560), (492, 1230), (308, 1230), (330, 560)]), cloth)
-    c.line([(308, 1200), (492, 1200)], GOLD, 10)
-    if kind == "mum":
-        c.fill(_poly([(338, 300), (400, 300), (470, 520), (440, 560)]), CREAM)    # drape
-        c.line([(400, 300), (470, 520)], GOLD, 8)
-        c.fill(_poly([(338, 300), (462, 300), (460, 380), (340, 380)]), GRN)       # blouse
+    """Parents, about 50, drawn exactly like the girl (same body, face and outline).
+    Mum: a mustard cotton kurti, off-white leggings, green dupatta, gold bangles.
+    Dad: a half-sleeve shirt and a checked kaili lungi, a watch."""
+    c = Canvas()
+    mum = kind == "mum"
+    # legs and flat sandals, same construction as the girl
+    for side, x_hip, x_ank in [(-1, 380, 374), (1, 420, 430)]:
+        c.fill(_limb([(x_hip, 760), (x_hip + side * 6, 960), (x_ank, 1300)], 62, 22), SKIN)
+        c.fill(_poly([(x_ank - 11, 1292), (x_ank + 11, 1292), (x_ank + 22, 1324), (x_ank - 10, 1324)]), SKIN, ow=2)
+        c.line([(x_ank - 12, 1326), (x_ank + 24, 1326)], (110, 70, 40), 6)
+    if mum:   # leggings over the legs
+        c.fill(_union(_limb([(380, 760), (374, 960), (374, 1290)], 64, 26), _limb([(420, 760), (426, 960), (430, 1290)], 64, 26)), WHITE)
+    # arms
+    c.fill(_limb([(338, 312), (322, 470), (304, 640)], 34, 22), SKIN); c.fill(_ell(302, 660, 16, 24), SKIN)
+    c.fill(_limb([(462, 312), (478, 470), (496, 640)], 34, 22), SKIN); c.fill(_ell(498, 660, 16, 24), SKIN)
+    if mum:
+        kurti = (214, 170, 52)
+        c.fill(_union(_poly([(338, 296), (462, 296), (470, 560), (500, 960), (300, 960), (330, 560)]),
+                      _limb([(340, 310), (326, 420)], 42, 34), _limb([(460, 310), (474, 420)], 42, 34)), kurti)
+        c.line([(400, 300), (400, 380)], (150, 110, 30), 3)                                   # placket
+        c.line([(306, 950), (494, 950)], RED, 6)                                              # hem border
+        c.line([(330, 700), (318, 960)], OUT, 2); c.line([(470, 700), (482, 960)], OUT, 2)  # side slits
+        c.fill(_poly([(356, 296), (392, 296), (470, 640), (446, 660)]), GRN)                  # dupatta
+        for y in (612, 626): c.line([(292, y), (314, y)], GOLD, 5)                            # bangles
     else:
-        c.fill(_poly([(338, 300), (462, 300), (466, 600), (334, 600)]), WHITE)
-        c.line([(400, 300), (400, 600)], (200, 196, 186), 2)
-        c.line([(334, 600), (466, 600)], (200, 196, 186), 3)
-    c.fill(_limb([(338, 312), (318, 480), (306, 650)], 36, 24), SKIN)
-    c.fill(_limb([(462, 312), (482, 480), (494, 650)], 36, 24), SKIN)
+        lungi = Image.new("RGB", c.rgb.size, PURP); dl = ImageDraw.Draw(lungi)
+        for x in range(0, c.rgb.size[0], 56): dl.rectangle((x, 0, x + 20, c.rgb.size[1]), fill=GRN)
+        for y in range(0, c.rgb.size[1], 56): dl.rectangle((0, y, c.rgb.size[0], y + 14), fill=(232, 110, 40))
+        c.fill(_poly([(334, 560), (466, 560), (478, 1260), (322, 1260)]), lungi)
+        c.line([(400, 562), (412, 640)], OUT, 3)                                              # knot fold
+        shirt = (176, 206, 226)
+        c.fill(_union(_poly([(336, 296), (464, 296), (472, 610), (328, 610)]),
+                      _limb([(340, 308), (322, 420)], 44, 36), _limb([(460, 308), (478, 420)], 44, 36)), shirt)
+        c.line([(400, 300), (400, 608)], (120, 140, 160), 2)
+        for y in range(340, 600, 50): c.fill(_ell(408, y, 4, 4), WHITE, outline=False)
+        c.line([(488, 612), (508, 612)], (60, 50, 40), 7)                                     # watch
     c.fill(_poly([(384, 225), (416, 225), (420, 300), (380, 300)]), SKIN, outline=False)
-    c.fill(_ell(400, 170, 54, 66), SKIN)
-    if kind == "mum":
-        c.fill(_poly([(344, 168), (352, 120), (400, 100), (448, 120), (456, 168), (430, 128), (370, 128)]), grey)
-        c.fill(_ell(400, 108, 34, 26), grey)
-        c.fill(_ell(400, 142, 5, 5), RED, outline=False)                           # small bindi
+    c.fill(_ell(400, 170, 52, 66), SKIN)
+    if mum:   # bun like the girl's, a little grey at the temple
+        c.fill(_poly([(344, 160), (352, 118), (400, 96), (448, 118), (456, 160), (430, 128), (370, 128)]), HAIR)
+        c.fill(_ell(400, 100, 34, 28), HAIR)
+        c.line([(356, 150), (370, 122)], (150, 146, 140), 4)
+        c.fill(_ell(400, 140, 4, 4), RED, outline=False)
+        for ex in (348, 452): c.fill(_ell(ex, 206, 5, 5), GOLD, outline=False)
     else:
-        c.fill(_poly([(346, 150), (356, 112), (400, 100), (444, 112), (454, 150), (430, 124), (370, 124)]), grey)
-        for ex in (380, 420):
-            m = Image.new("L", c.rgb.size, 0)
-            ImageDraw.Draw(m).ellipse(((ex - 16) * 2, 160 * 2, (ex + 16) * 2, 188 * 2), outline=255, width=6)
-            c.rgb.paste(Image.new("RGB", c.rgb.size, OUT), (0, 0), m); c.alpha = _union(c.alpha, m)
-        c.line([(380, 200), (400, 196), (420, 200)], grey, 6)                        # moustache
-    for ex in (380, 420):
-        if kind == "mum": c.line([(ex - 11, 174), (ex, 180), (ex + 11, 174)], OUT, 2.4)
-    if laugh: c.fill(_ell(400, 218, 14, 10), (90, 30, 30))
-    else: c.line([(386, 216), (400, 222), (414, 216)], (120, 40, 40), 3)
+        c.fill(_poly([(346, 156), (352, 114), (400, 100), (448, 114), (454, 156), (432, 126), (368, 126)]), HAIR)
+        for ex in (350, 450): c.line([(ex, 128), (ex, 154)], (150, 146, 140), 6)             # greying temples
+        c.line([(378, 200), (400, 195), (422, 200)], HAIR, 7)                                 # moustache
+    for ex in (380, 420):                                                                     # same eyes as the girl
+        c.line([(ex - 12, 172), (ex, 178), (ex + 12, 172)], OUT, 2.4)
+        c.line([(ex - 13, 156), (ex + 12, 154)], HAIR, 3)
+    c.line([(400, 182), (396, 200), (402, 202)], dress.SKIN_SH, 2)
+    if laugh: c.fill(_ell(400, 218, 13, 9), (90, 30, 30))
+    else: c.line([(388, 216), (400, 221), (412, 216)], (120, 40, 40), 3)
     rgb = c.rgb.resize((800, 1500), Image.LANCZOS); a = c.alpha.resize((800, 1500), Image.LANCZOS)
     fig = rgb.convert("RGBA"); fig.putalpha(a)
     pad = Image.new("RGBA", (830, 1530), (0, 0, 0, 0))
@@ -451,8 +470,8 @@ def shot_court(t):                                    # 17.4 - 23.6
     u = t - 17.4
     img = courtyard_live(COURT.copy(), t).convert("RGBA")
     handed = u > 2.0; kiss = ramp(u, 2.8, 3.6) * (1 - ramp(u, 5.0, 5.8))
-    paste(img, DAD_L if (u > 3.4 and int(u * 6) % 2) else DAD, 860, 1290, scale=0.62)
-    paste(img, MUM, 650, 1300, scale=0.6)
+    paste(img, DAD_L if (u > 3.4 and int(u * 6) % 2) else DAD, 880, 1300, scale=0.62)
+    paste(img, MUM, 670, 1300, scale=0.62)
     gx = lerp(150, 420, ramp(u, 0.0, 1.6)) + 40 * kiss
     g = girl("front", q(1.05 + 0.05 * math.sin(u * 4), 0.05), 0.0)
     paste(img, g, gx, 1300, scale=0.62, rot=-9 * kiss)

@@ -106,13 +106,36 @@ def _folds(c, flare, spin, cx=400, top=470, hem=840):
         x0 = cx + j * 14; x1 = cx + j * 46 * flare + 10 * np.sin(spin * 6.28 + j)
         c.line([(x0, top + 40), ((x0 + x1) / 2, (top + hem) / 2 + 30), (x1, hem - 10)], (70, 60, 50), 1.0)
 
+def _foliage_tile(w, h, sw=190 * S):
+    """Below the waist and the whole back: the painting's black and yellow leaves, tiled."""
+    from PIL import ImageEnhance
+    src = ImageEnhance.Contrast(ImageEnhance.Color(PAINT).enhance(1.5)).enhance(1.2)
+    strip = src.crop((800, 0, PAINT.width, 900)).resize((sw, int(900 * sw / (PAINT.width - 800))), Image.LANCZOS)
+    tile = Image.new("RGB", (sw * 2, strip.height)); tile.paste(strip, (0, 0))
+    tile.paste(strip.transpose(Image.FLIP_LEFT_RIGHT), (sw, 0))
+    out = Image.new("RGB", (w + sw * 2, h))
+    for y in range(0, h, strip.height):
+        for x in range(0, w + sw * 2, sw * 2): out.paste(tile, (x, y))
+    return out
+
+_HOUSE = None
+def _house_print():
+    """Bodice: the house, the colour blocks seen through the door."""
+    global _HOUSE
+    if _HOUSE is None:
+        img = Image.new("RGB", (FW * S, FH * S), (20, 18, 16))
+        h = PAINT.crop((330, 90, 700, 650)).resize((130 * S, 150 * S), Image.LANCZOS)
+        img.paste(h, (335 * S, 335 * S))
+        _HOUSE = linen(img)
+    return _HOUSE
+
 _BIG = None
 def _linen_print(spin):
     """Linen-textured print, built once, then slid sideways for the twirl."""
     global _BIG
     if _BIG is None:
-        _BIG = linen(_print_tile(FW * S * 2, FH * S, 0.0, scale=210 * S))
-    tw = 2 * 210 * S
+        _BIG = linen(_foliage_tile(FW * S * 2, FH * S))
+    tw = 2 * 190 * S
     dx = int((spin % 1) * tw)
     return _BIG.crop((dx, 0, dx + FW * S, FH * S))
 
@@ -144,7 +167,8 @@ def figure(view="front", flare=1.0, spin=0.0):
     bod = _poly([(350, 358), (372, 350), (400, 364), (428, 350), (450, 358),
                  (446, 470), (354, 470)] if not back else [(348, 372), (452, 372), (446, 470), (354, 470)])
     sk = _skirt(flare, spin)
-    c.fill(_union(bod, sk), pr)
+    c.fill(sk, pr)
+    c.fill(bod, pr if back else _house_print())
     _folds(c, flare, spin)
     c.line([(354, 470), (446, 470)], OUT, 3)                                      # waist seam
     # spaghetti straps
