@@ -393,9 +393,9 @@ PAINT = Image.open("reverie.jpg").convert("RGB")
 
 # ---------------------------------------------------------------- text
 # every line copied word for word from the book, in story order
-CARDS = [(0.3, 3.2, "we soar high into our imaginations", PURP), (3.6, 7.9, "We have sailed so far", PURP),
-         (8.4, 13.7, "we want to run home,", RED), (14.1, 17.2, "wherever it may be.", PURP),
-         (18.0, 23.3, "and we all go home together.", PURP)]
+CARDS = [(0.3, 3.2, "We build them.", PURP), (3.6, 7.9, "everything that you have built,", PURP),
+         (8.4, 13.7, "all the kindness and love", RED), (14.1, 17.2, "has made a place in a far away land", PURP),
+         (18.0, 23.3, "will you ever stop?", PURP)]
 os.chdir(R2)
 CARD_IMG = [lib.ransom(s, ink, size=74, seed=i * 5 + 3, max_w=720) for i, (_, _, s, ink) in enumerate(CARDS)]
 END_TXT = lib.ransom("Wear art, not a logo.", PURP, size=74, seed=41, max_w=720)
