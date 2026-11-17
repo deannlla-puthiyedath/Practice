@@ -155,7 +155,7 @@ def bag(bread=True):
     d.arc((60, 100, 140, 180), 180, 360, fill=OUT, width=4)
     return im
 
-def elder(kind, laugh=False):
+def elder(kind, laugh=False, lift=False):
     """Parents, about 50, drawn exactly like the girl (same body, face and outline).
     Mum: a mustard cotton kurti, off-white leggings, green dupatta, gold bangles.
     Dad: a half-sleeve shirt and a checked kaili lungi, a watch."""
@@ -173,8 +173,9 @@ def elder(kind, laugh=False):
         c.fill(_union(_limb([(380, 760), (374, 960), (374, 1290)], 64, 26), _limb([(420, 760), (426, 960), (430, 1290)], 64, 26)), WHITE)
     # arms
     ax = 0 if mum else 34                                                                   # Dad is broader
-    c.fill(_limb([(338 - ax / 2, 312), (322 - ax, 470), (304 - ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(302 - ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
-    c.fill(_limb([(462 + ax / 2, 312), (478 + ax, 470), (496 + ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(498 + ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
+    if not lift:
+     c.fill(_limb([(338 - ax / 2, 312), (322 - ax, 470), (304 - ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(302 - ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
+     c.fill(_limb([(462 + ax / 2, 312), (478 + ax, 470), (496 + ax, 640)], 34 + ax * 0.8, 22 + ax * 0.6), sk); c.fill(_ell(498 + ax, 660, 16 + ax / 3, 24 + ax / 4), sk)
     if mum:
         kurti = (196, 40, 44)                                                                 # simple red kurti
         c.fill(_union(_poly([(334, 296), (466, 296), (474, 380), (452, 480), (482, 640), (492, 960), (308, 960), (318, 640), (348, 480), (326, 380)]),
@@ -219,6 +220,9 @@ def elder(kind, laugh=False):
     c.line([(400, 182), (396, 200), (402, 202)], dress.SKIN_SH, 2)
     if laugh: c.fill(_ell(400, 218, 13, 9), (90, 30, 30))
     else: c.line([(388, 216), (400, 221), (412, 216)], (120, 40, 40), 3)
+    if lift and not mum:   # arms are drawn by the scene, over her waist; here only the sleeve stubs
+        sh = (176, 206, 226)
+        for sx in (-1, 1): c.fill(_limb([(400 + sx * 82, 320), (400 + sx * 118, 300)], 70, 62), sh)
     rgb = c.rgb.resize((800, 1500), Image.LANCZOS); a = c.alpha.resize((800, 1500), Image.LANCZOS)
     fig = rgb.convert("RGBA"); fig.putalpha(a)
     pad = Image.new("RGBA", (830, 1530), (0, 0, 0, 0))

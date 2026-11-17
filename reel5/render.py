@@ -24,7 +24,7 @@ def q(x, s): return round(x / s) * s
 def girl(view, flare, spin, coat=None): return K.girl(view, flare, spin, coat)
 @lru_cache(maxsize=8)
 def BOY(w): return boy(w)
-MUM = elder("mum"); DAD = elder("dad"); DAD_L = elder("dad", True)
+MUM = elder("mum"); DAD = elder("dad"); DAD_L = elder("dad", True); DAD_UP = elder("dad", True, True)
 
 def heart(d, x, y, r, col=RED):
     d.ellipse((x - r, y - r * 0.7, x, y + r * 0.3), fill=col); d.ellipse((x, y - r * 0.7, x + r, y + r * 0.3), fill=col)
@@ -255,23 +255,48 @@ def shot_house(t):                                    # 32 - 36: out of the cab,
     paste(img, g, lerp(380, 540, k), lerp(1500, 1190, k) + 8 * abs(math.sin(u * 8)), scale=lerp(0.66, 0.38, k))
     return img
 
-def shot_court(t):                                    # 36 - 44: she runs to Dad; he lifts and twirls her
+@lru_cache(maxsize=64)
+def lifted(step):
+    """Dad holding her up by the waist, the pair as one cut-out; step 0..23 around the twirl."""
+    ang = step / 24 * 2 * math.pi
+    g = girl("front", 1.4, (step / 24) % 1)
+    dad = DAD_UP
+    grp = Image.new("RGBA", (1100, 2100), (0, 0, 0, 0))
+    dx0, dy0 = 600, 760                                            # Dad's cut-out (292 x 1249) in the group
+    P_ = lambda x, y: (dx0 + x, dy0 + y)
+    gs = g.resize((int(g.width * 0.86), int(g.height * 0.86)), Image.LANCZOS).rotate(-6, expand=True, resample=Image.BICUBIC)
+    wx, wy = P_(-20, 0)                                            # her waist: up beside his head, as in Della's photo
+    grp.alpha_composite(gs, (int(wx - gs.width / 2), int(wy - gs.height * 0.31)))
+    grp.alpha_composite(dad, (dx0, dy0))
+    d = ImageDraw.Draw(grp); SK = (228, 188, 156)
+    for pts in ([P_(62, 250), P_(-60, 200), P_(-80, 40)], [P_(230, 250), P_(100, 250), P_(45, 50)]):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            d.line((x0, y0, x1, y1), fill=OUT, width=50)
+        for x, y in pts[1:-1]: d.ellipse((x - 25, y - 25, x + 25, y + 25), fill=OUT)
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            d.line((x0, y0, x1, y1), fill=SK, width=42)
+        for x, y in pts[1:-1]: d.ellipse((x - 21, y - 21, x + 21, y + 21), fill=SK)
+        hx, hy = pts[-1]
+        d.ellipse((hx - 25, hy - 29, hx + 25, hy + 29), fill=SK, outline=OUT, width=4)
+    sx = max(0.3, abs(math.cos(ang)))
+    out = grp.resize((max(1, int(grp.width * sx)), grp.height), Image.LANCZOS)
+    if math.cos(ang) < 0: out = out.transpose(Image.FLIP_LEFT_RIGHT)
+    return out
+
+def shot_court(t):                                    # 36 - 44: she runs to Dad; he picks her up and twirls her
     u = t - 36.0
     img = courtyard_live(COURT.copy(), t).convert("RGBA")
     paste(img, MUM, 930, 1300, scale=0.62)
-    run = ramp(u, 0.0, 1.4)
-    lift = ramp(u, 1.4, 2.2) * (1 - ramp(u, 6.6, 7.6))
-    spin_on = 1.9 < u < 7.0
-    paste(img, DAD_L if spin_on and int(u * 5) % 2 else DAD, 700, 1290, scale=0.66)
-    ang = (u - 1.9) * 2.2 * math.pi if spin_on else 0.0
-    view = "front" if math.cos(ang) >= 0 else "back"
-    flare = q(1.0 + 0.7 * lift, 0.1)
-    g = girl(view, flare, q((ang / 6.28) % 1, 1 / 12))
-    sx = max(0.35, abs(math.cos(ang)) ** 0.5) if spin_on else 1.0
-    gw = int(g.width * 0.6 * sx); gh = int(g.height * 0.6)
-    gs = g.resize((max(1, gw), gh), Image.LANCZOS)
-    gx = lerp(80, 580, run) + 60 * math.sin(ang) * lift
-    paste(img, gs, gx, 1300 - 200 * lift)
+    if u < 1.5 or u > 7.2:                            # run in / set down
+        k = ramp(u, 0.0, 1.4)
+        paste(img, DAD_L if u > 7.2 else DAD, 600, 1290, scale=0.66)
+        g = girl("front", 1.0, 0.0)
+        paste(img, g, lerp(80, 400, k) if u < 1.5 else 400, 1300, scale=0.6)
+        return img
+    lift = ramp(u, 1.5, 2.2) * (1 - ramp(u, 6.6, 7.2))
+    step = int(((u - 2.0) * 1.0 * 24) % 24) if u > 2.0 and u < 6.6 else 0
+    grp = lifted(step)
+    paste(img, grp, 560, 1230 - 60 * lift + 6 * math.sin(u * 6), scale=0.66)
     return img
 
 def shot_hug(t):                                      # 44 - 50: Mum hugs her tight. Just the two of them.
