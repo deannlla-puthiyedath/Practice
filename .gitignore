@@ -38,3 +38,4 @@ reel5/*.wav
 reel5/check_*.jpg
 reel5/render.log
 reel5/__pycache__/
+reel5/*.m4a
