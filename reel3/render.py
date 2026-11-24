@@ -3,7 +3,7 @@ import os, subprocess, numpy as np
 from PIL import Image
 import board as B
 
-FPS, DUR = 30, 31.0
+FPS, DUR = 30, 32.0
 OUT = os.path.join(B.HERE, "reel3_silent.mp4")
 ease = lambda x: (lambda c: c * c * (3 - 2 * c))(min(max(x, 0.0), 1.0))
 lerp = lambda a, b, k: a + (b - a) * k
@@ -12,9 +12,10 @@ W_MED, W_OFF, W_CRY, W_STI = B.room("meditate"), B.room("coatoff"), B.room("cray
 BOU, JEW, MIR, END = B.boutique(), B.jeweller(), B.mirror(), B.endcard()
 GX, GY = B.GIRL[0], B.GIRL[1] - 660
 # (start, end, text): cut-letter lines, popped in
-LINES = [(0.4, 3.6, "Draw a box. Step in."), (3.8, 6.9, "Shut out the noise. Yours too."),
-         (13.2, 16.0, "There's a child in there who never stopped playing."), (16.2, 19.0, "Hand her your problems and a crayon."),
-         (19.3, 24.9, "She'll fix what your mind can't."), (25.3, 28.9, "There. I have just taught you how to meditate.")]
+# timed to Della's narration (silence detection on her voice memo)
+LINES = [(1.5, 4.8, "Draw a box. Step in."), (4.9, 8.6, "Shut out the noise. Yours too."),
+         (13.9, 16.8, "There's a child in there who never stopped playing."), (16.9, 19.9, "Hand her your problems and a crayon."),
+         (20.0, 25.4, "She'll fix what your mind can't."), (25.9, 30.0, "There. I have just taught you how to meditate.")]
 TXT = [B.r2.ransom(t, (173, 51, 97), size=76 if len(t) < 40 else 68, seed=100 + i, max_w=880) for i, (_, _, t) in enumerate(LINES)]
 
 
@@ -51,9 +52,9 @@ def scene(t):
         return mix(B.crop_frame(W_STI, GX, 2960, 1420), zoom(BOU, (t - 19.3) / 2.7), (t - 19.3) / 0.4)
     if t < 25.3:
         return mix(zoom(BOU, 1), zoom(JEW, (t - 22.0) / 3.3), (t - 22.0) / 0.4)
-    if t < 29.2:
-        return mix(zoom(JEW, 1), zoom(MIR, (t - 25.3) / 3.9), (t - 25.3) / 0.4)
-    return mix(zoom(MIR, 1), END, (t - 29.2) / 0.5)
+    if t < 30.1:
+        return mix(zoom(JEW, 1), zoom(MIR, (t - 25.3) / 4.8), (t - 25.3) / 0.4)
+    return mix(zoom(MIR, 1), END, (t - 30.1) / 0.5)
 
 
 def pop(u):
