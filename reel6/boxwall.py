@@ -1,5 +1,5 @@
 """Reel 6 box wall: the dress pattern opens into 35 boxes of the life she already has.
-5 x 7 grid on 1080x1920. Each box = a real crop of Sunset (2) washed light, with a small cut-paper scene that keeps moving.
+Builds 2 -> 3 -> 6 -> 9 -> 35 boxes (5x7), then pushes through the sun into the painting.
 Sun boxes (yellow, orange) hold home and warmth; sea boxes (blue) hold water, time and freedom.
 
   python3 boxwall.py still 2.0        -> boxwall_still.jpg
@@ -16,7 +16,9 @@ W, H, FPS = 1080, 1920, 30
 COLS, ROWS, GAP = 5, 7, 12
 CW, CH = (W - GAP * (COLS + 1)) // COLS, (H - GAP * (ROWS + 1)) // ROWS
 SS = 2
-BW, BH = CW * SS, CH * SS
+BW = 720
+BH = int(round(BW * CH / CW))
+K = BW / 432
 PAPER = (248, 246, 240)
 
 # ------------------------------------------------------------------ palettes (all from the painting)
@@ -41,10 +43,10 @@ def bg_for(warm, k, still=False):
     if warm: ci, ri = r.integers(0, 10), r.integers(0, 3)
     else: ci, ri = r.integers(0, 10), r.integers(3, 7)
     if ri == 0: ri = 1
-    im = crop_box(ci, ri).resize((BW, BH), Image.BICUBIC).filter(ImageFilter.GaussianBlur(3))
+    im = crop_box(ci, ri).resize((BW, BH), Image.BICUBIC).filter(ImageFilter.GaussianBlur(2 * K))
     a = np.asarray(im).astype(np.float32)
     wash = np.array((WARM if warm else BLUE)["wash"], np.float32)
-    a = a * 0.42 + wash * 0.58
+    a = a * 0.85 + wash * 0.15
     return Image.fromarray(a.clip(0, 255).astype(np.uint8)).convert("RGBA")
 
 # ------------------------------------------------------------------ drawing context (normalised coords 0..1)
@@ -56,26 +58,26 @@ class C:
     def X(self, x): return x * BW
     def Y(self, y): return y * BH
     def pts(self, ps): return [(self.X(x), self.Y(y)) for x, y in ps]
-    def P(self, ps, fill, w=4): self.d.polygon(self.pts(ps), fill=fill, outline=self.o if w else None, width=w)
+    def P(self, ps, fill, w=4): self.d.polygon(self.pts(ps), fill=fill, outline=self.o if w else None, width=max(1, int(w * K)))
     def R(self, x0, y0, x1, y1, fill, w=4, r=0):
         b = (self.X(x0), self.Y(y0), self.X(x1), self.Y(y1))
-        if r: self.d.rounded_rectangle(b, radius=r * SS, fill=fill, outline=self.o if w else None, width=w)
-        else: self.d.rectangle(b, fill=fill, outline=self.o if w else None, width=w)
+        if r: self.d.rounded_rectangle(b, radius=r * SS * K, fill=fill, outline=self.o if w else None, width=max(1, int(w * K)))
+        else: self.d.rectangle(b, fill=fill, outline=self.o if w else None, width=max(1, int(w * K)))
     def E(self, cx, cy, rx, ry, fill, w=4):
         self.d.ellipse((self.X(cx - rx), self.Y(cy - ry), self.X(cx + rx), self.Y(cy + ry)), fill=fill,
-                       outline=self.o if w else None, width=w)
+                       outline=self.o if w else None, width=max(1, int(w * K)))
     def O(self, cx, cy, r, fill, w=4):  # circle with radius in width units
         rr = r * BW
         self.d.ellipse((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), fill=fill,
-                       outline=self.o if w else None, width=w)
-    def L(self, ps, col=None, w=4): self.d.line(self.pts(ps), fill=col or self.o, width=w, joint="curve")
+                       outline=self.o if w else None, width=max(1, int(w * K)))
+    def L(self, ps, col=None, w=4): self.d.line(self.pts(ps), fill=col or self.o, width=max(1, int(w * K)), joint="curve")
     def A(self, cx, cy, r, a0, a1, col=None, w=4):
         rr = r * BW
-        self.d.arc((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), a0, a1, fill=col or self.o, width=w)
+        self.d.arc((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), a0, a1, fill=col or self.o, width=max(1, int(w * K)))
     def PIE(self, cx, cy, r, a0, a1, fill, w=4):
         rr = r * BW
         self.d.pieslice((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), a0, a1, fill=fill,
-                        outline=self.o if w else None, width=w)
+                        outline=self.o if w else None, width=max(1, int(w * K)))
 
 def ease(x): x = min(max(x, 0.0), 1.0); return x * x * (3 - 2 * x)
 def fall(t, t0, y0, y1, dur=0.45):
@@ -138,42 +140,6 @@ def v_dad_serve(c, t):
     for k in range(3):
         s = (t * 0.4 + k / 3) % 1
         c.L([(0.36 + k * 0.06 + wob(s, 1, 0.02), 0.7 - s * 0.25), (0.36 + k * 0.06 + wob(s, 1, 0.02, 2), 0.64 - s * 0.25)], p["cream"], 5)
-
-def v_alarm_off(c, t):
-    p = c.p
-    br = wob(t, 0.35, 0.012)
-    c.O(0.5, 0.44, 0.27, p["yel"]); c.O(0.5, 0.44, 0.21, p["cream"])
-    for s in (-1, 1):  # muffled bells, tied with cloth
-        c.O(0.5 + s * 0.2, 0.25, 0.09, p["deep"])
-        c.L([(0.5 + s * 0.27, 0.2), (0.5 + s * 0.12, 0.3)], p["cream"], 9)
-    c.A(0.42, 0.44, 0.04, 20, 160, w=4); c.A(0.58, 0.44, 0.04, 20, 160, w=4)  # sleeping eyes
-    c.P([(0.08, 0.52 - br), (0.92, 0.52 - br), (0.98, 0.9), (0.02, 0.9)], p["org"])  # blanket breathing
-    for k in range(4): c.L([(0.1 + k * 0.22, 0.56 - br), (0.06 + k * 0.24, 0.88)], p["deep"], 3)
-    for k in range(3):  # sleep bubbles drifting up, no letters
-        s = (t * 0.3 + k / 3) % 1
-        c.O(0.72 + 0.1 * s, 0.32 - 0.3 * s, 0.02 + 0.03 * s, p["wash"], 3)
-
-def v_house(c, t):
-    p = c.p
-    c.R(0.12, 0.42, 0.88, 0.95, p["cream"])
-    c.P([(0.02, 0.44), (0.98, 0.44), (0.78, 0.18), (0.22, 0.18)], p["rust"])
-    for k in range(5): c.L([(0.1 + k * 0.2, 0.43), (0.25 + k * 0.125, 0.2)], p["deep"], 3)
-    c.R(0.36, 0.55, 0.64, 0.95, (255, 214, 120))  # warm light inside
-    op = ease((t - 0.8) / 2.5) * 0.12
-    c.R(0.36, 0.55, 0.5 - op, 0.95, p["deep"]); c.R(0.5 + op, 0.55, 0.64, 0.95, p["deep"])
-    for x in (0.4 - op * 0.3, 0.55 + op * 0.7): c.O(x + 0.02, 0.75, 0.012, GOLDC, 0)
-    c.R(0.18, 0.55, 0.28, 0.75, p["rust"]); c.R(0.72, 0.55, 0.82, 0.75, p["rust"])
-
-def v_room(c, t):
-    p = c.p
-    c.R(0.55, 0.08, 0.92, 0.45, (255, 236, 170))
-    c.L([(0.735, 0.08), (0.735, 0.45)], p["out"], 4); c.L([(0.55, 0.265), (0.92, 0.265)], p["out"], 4)
-    sw = wob(t, 0.4, 0.03)
-    c.P([(0.5, 0.06), (0.6 + sw, 0.06), (0.56 + sw * 1.5, 0.5), (0.5, 0.5)], p["org"])
-    beam = 0.15 + 0.25 * ease(t / 6)
-    c.d.polygon(c.pts([(0.55, 0.45), (0.92, 0.45), (0.6 + beam, 0.78), (0.2 + beam, 0.78)]), fill=(255, 240, 160, 150))
-    c.R(0.06, 0.62, 0.94, 0.86, p["yel"]); c.R(0.06, 0.56, 0.18, 0.92, p["rust"]); c.R(0.86, 0.66, 0.94, 0.92, p["rust"])
-    c.E(0.3, 0.6, 0.12, 0.04, p["cream"]); c.P([(0.42, 0.62), (0.86, 0.62), (0.86, 0.72), (0.42, 0.72)], p["org"])
 
 def v_easel(c, t):
     p = c.p
@@ -265,18 +231,6 @@ def v_jasmine(c, t):
         s_ = (t * 0.25 + k / 3) % 1
         c.O(0.15 + k * 0.32 + wob(s_, 1, 0.05), 0.05 + s_ * 0.6, 0.013, (255, 255, 252), 2)
 
-def v_mango(c, t):
-    p = c.p
-    c.L([(0, 0.18), (1, 0.12)], p["rust"], 10)
-    for i in range(6): c.E(0.08 + i * 0.17, 0.2 + 0.03 * (i % 2), 0.08, 0.03, (150, 186, 70), 3)
-    c.P([(0.25, 0.7), (0.75, 0.7), (0.7, 0.95), (0.3, 0.95)], (214, 170, 100))
-    for k in range(3): c.L([(0.27 + k * 0.01, 0.76 + k * 0.06), (0.73 - k * 0.01, 0.76 + k * 0.06)], p["rust"], 2)
-    for i, t0 in enumerate((0.8, 3.0)):
-        x = 0.42 + i * 0.16
-        y = 0.3 if t < t0 else fall(t, t0, 0.3, 0.68 - i * 0.02, 0.6)
-        col = tuple(int(a + (b - a) * min(t / max(t0, 0.1), 1)) for a, b in zip((170, 196, 80), p["yel"]))
-        c.E(x, y, 0.06, 0.04, col, 3)
-
 def v_pookalam(c, t):
     p = c.p
     rings = [p["deep"], p["org"], p["yel"], (255, 255, 250), p["rust"], p["lemon"], p["org"]]
@@ -339,27 +293,16 @@ def v_sun(c, t):
     sun = PAINT.crop((735, 135, 885, 270)).resize((int(BW * 0.78), int(BW * 0.78 * 135 / 150)), Image.BICUBIC)
     sun = sun.rotate(-t * 9, resample=Image.BICUBIC, fillcolor=(250, 236, 180))
     m = Image.new("L", sun.size, 0); ImageDraw.Draw(m).ellipse((sun.width * 0.12, sun.height * 0.1, sun.width * 0.88, sun.height * 0.9), fill=255)
-    m = m.filter(ImageFilter.GaussianBlur(10))
+    m = m.filter(ImageFilter.GaussianBlur(10 * K))
     g = 1.0 + 0.08 * math.sin(t * 2)
     glow = Image.new("RGBA", (BW, BH), (0, 0, 0, 0)); gd = ImageDraw.Draw(glow)
     for k in range(6):
         r = BW * (0.3 + 0.06 * k) * g
         gd.ellipse((BW / 2 - r, BH / 2 - r, BW / 2 + r, BH / 2 + r), fill=(255, 214, 90, 26))
-    c.img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(16)))
+    c.img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(16 * K)))
     c.img.paste(sun, (int(BW / 2 - sun.width / 2), int(BH / 2 - sun.height / 2)), m)
 
 # ================================================================== BLUE boxes
-def v_tender_coconut(c, t):
-    p = c.p
-    c.O(0.5, 0.56, 0.32, (170, 196, 80))
-    c.P([(0.36, 0.3), (0.64, 0.3), (0.58, 0.22), (0.42, 0.22)], (220, 226, 130))
-    c.O(0.5, 0.26, 0.07, p["white"], 3)
-    c.L([(0.52, 0.26), (0.68, -0.02)], p["white"], 10); c.L([(0.52, 0.26), (0.68, -0.02)], p["mid"], 3)
-    for k in range(4):
-        s = (t * 0.6 + k / 4) % 1
-        c.O(0.6 + 0.02 * k, 0.2 - s * 0.18, 0.012, p["white"], 2)
-    c.L([(0.25, 0.92), (0.75, 0.92)], p["deep"], 6)
-
 def v_herbal_water(c, t):
     p = c.p
     c.P([(0.18, 0.2), (0.52, 0.2), (0.56, 0.86), (0.14, 0.86)], (250, 250, 252))
@@ -370,34 +313,6 @@ def v_herbal_water(c, t):
     c.A(0.6, 0.5, 0.1, -80, 80, p["out"], 6)
     c.R(0.66, 0.6, 0.86, 0.88, (230, 232, 236)); c.R(0.67, 0.68, 0.85, 0.87, (240, 178, 140), 0)
     c.L([(0.08, 0.94), (0.92, 0.94)], p["deep"], 6)
-
-def v_well(c, t):
-    p = c.p
-    c.R(0.15, 0.62, 0.85, 0.96, p["pale"]); c.E(0.5, 0.62, 0.35, 0.05, p["navy"])
-    for k in range(3): c.L([(0.15, 0.7 + k * 0.08), (0.85, 0.7 + k * 0.08)], p["sky"], 2)
-    c.L([(0.18, 0.62), (0.18, 0.12)], p["out"], 8); c.L([(0.82, 0.62), (0.82, 0.12)], p["out"], 8); c.L([(0.14, 0.12), (0.86, 0.12)], p["out"], 8)
-    c.O(0.5, 0.16, 0.05, p["mid"])
-    y = 0.36 + 0.22 * (0.5 + 0.5 * math.cos(t * 1.1))
-    c.L([(0.5, 0.2), (0.5, y)], p["out"], 3)
-    c.P([(0.43, y), (0.57, y), (0.55, y + 0.1), (0.45, y + 0.1)], p["mid"])
-    if y < 0.45:
-        for k in range(3): c.O(0.45 + k * 0.05, y + 0.12 + ((t * 2 + k * 0.3) % 1) * 0.15, 0.012, p["sky"], 0)
-
-def v_lotus(c, t):
-    p = c.p
-    for k in range(4):
-        s = (t * 0.35 + k / 4) % 1
-        c.d.ellipse(
-            (c.X(0.5 - 0.08 - 0.45 * s), c.Y(0.66 - 0.03 - 0.12 * s), c.X(0.5 + 0.08 + 0.45 * s), c.Y(0.66 + 0.03 + 0.12 * s)),
-            outline=p["white"], width=3)
-    c.E(0.25, 0.8, 0.14, 0.04, p["mid"]); c.E(0.78, 0.5, 0.12, 0.035, p["mid"])
-    op = ease(t / 4)
-    for j in range(5):
-        a = math.pi * (0.15 + 0.7 * j / 4)
-        spread = 0.05 + 0.09 * op
-        cx, cy = 0.5 + spread * math.cos(a) * -1, 0.6 - 0.12 * math.sin(a) * (0.6 + 0.4 * op)
-        c.P([(0.5, 0.64), (cx - 0.04, cy + 0.02), (cx, cy - 0.06), (cx + 0.04, cy + 0.02)], p["white"], 3)
-    c.O(0.5, 0.6, 0.03, (244, 222, 100), 2)
 
 def v_swing(c, t):
     p = c.p
@@ -423,20 +338,6 @@ def v_ferry(c, t):
         gx = ((t * 0.12 + k * 0.5) % 1.2) - 0.1
         c.L([(gx, 0.15 + k * 0.06), (gx + 0.03, 0.17 + k * 0.06 + wob(t, 2, 0.01)), (gx + 0.06, 0.15 + k * 0.06)], p["out"], 3)
 
-def v_bus(c, t):
-    p = c.p
-    for i in range(5):
-        x = 1.1 - ((t * 0.7 + i * 0.3) % 1.5)
-        c.L([(x, 0.7), (x + 0.02, 0.25)], p["navy"], 6)
-        for a in (-1, 1): c.P([(x + 0.02, 0.25), (x + 0.02 + a * 0.14, 0.3), (x + 0.02 + a * 0.06, 0.22)], p["deep"], 2)
-    c.R(0, 0.7, 1, 1, p["sky"], 0)
-    c.R(0, 0, 1, 0.12, p["deep"]); c.R(0, 0.62, 1, 1, p["deep"]); c.R(0, 0, 0.06, 1, p["deep"]); c.R(0.94, 0, 1, 1, p["deep"])
-    c.L([(0.06, 0.6), (0.94, 0.6)], p["white"], 8)
-    c.L([(0.06, 0.58), (0.45, 0.58)], SKIN, 16); c.E(0.47, 0.58, 0.05, 0.022, SKIN)
-    c.L([(0.3, 0.6), (0.3, 0.62)], GOLDC, 6)
-    w = wob(t, 1.8, 0.03)
-    c.L([(0.7, 0.9), (0.76 + w, 0.75), (0.8 - w, 0.7)], HAIR, 10)
-
 def v_hospital(c, t):
     p = c.p
     c.R(0, 0.86, 1, 1, p["pale"], 0)
@@ -449,21 +350,6 @@ def v_hospital(c, t):
     c.R(0.38, 0.72, 0.62, 0.86, p["navy"]); c.R(0.38, 0.72, 0.5 - op, 0.86, p["sky"], 2); c.R(0.5 + op, 0.72, 0.62, 0.86, p["sky"], 2)
     for x in (0.05, 0.95):
         c.L([(x, 0.86), (x, 0.66)], p["out"], 5); c.O(x, 0.6, 0.08, p["mid"])
-
-def v_street_art(c, t):
-    p = c.p
-    c.R(0.02, 0.1, 0.98, 0.9, p["pale"])
-    for i in range(6): c.L([(0.02, 0.1 + i * 0.13), (0.98, 0.1 + i * 0.13)], p["sky"], 2)
-    k = ease(t / 4.5)
-    mural = Image.new("RGBA", (BW, BH), (0, 0, 0, 0)); md = C(mural, c.p)
-    md.E(0.5, 0.5, 0.3, 0.16, p["deep"]); md.P([(0.78, 0.5), (0.95, 0.36), (0.95, 0.64)], p["deep"])
-    md.O(0.32, 0.46, 0.03, p["white"]); md.O(0.32, 0.46, 0.012, p["navy"], 0)
-    for j in range(4): md.A(0.5 + j * 0.06, 0.5, 0.06, 300, 60, p["white"], 3)
-    md.O(0.2, 0.25, 0.05, (244, 214, 90))
-    m = Image.new("L", (BW, BH), 0); ImageDraw.Draw(m).rectangle((0, 0, int(BW * k), BH), fill=255)
-    c.img.paste(mural, (0, 0), Image.composite(mural.split()[3], Image.new("L", (BW, BH), 0), m))
-    x = k
-    c.L([(x, 0.45), (x + 0.08, 0.7)], p["out"], 8)
 
 def v_cycle(c, t):
     p = c.p
@@ -493,23 +379,6 @@ def v_canoe(c, t):
     c.L([(x + 0.36, 0.3), (x + 0.2, 0.72)], p["out"], 4)
     for k in range(3): c.A(x - 0.05 - k * 0.08, 0.66, 0.04, 200, 340, p["white"], 2)
 
-def v_fishing_net(c, t):
-    p = c.p
-    c.O(0.75, 0.42, 0.09, (244, 160, 70))
-    c.R(0, 0.5, 1, 1, p["mid"], 0)
-    for k in range(4): c.A(0.2 + k * 0.22, 0.6 + (k % 2) * 0.12, 0.05, 200, 340, p["white"], 3)
-    a = 0.22 + 0.18 * math.sin(t * 0.8)
-    pivot = (0.25, 0.52)
-    tip = (pivot[0] + 0.62 * math.cos(-a), pivot[1] + 0.62 * math.sin(-a) * BW / BH * -1 + 0.0)
-    tipy = 0.52 - 0.35 * math.sin(a)
-    tx = 0.25 + 0.55 * math.cos(a)
-    c.L([(0.25, 0.52), (tx, tipy)], p["out"], 6)
-    c.L([(0.25, 0.52), (0.05, 0.3)], p["out"], 5)
-    for o in (-0.12, 0.12): c.L([(tx, tipy), (tx + o, tipy + 0.2 + 0.25 * (0.4 - a))], p["out"], 2)
-    ny = tipy + 0.2 + 0.25 * (0.4 - a)
-    c.A(tx, ny, 0.12, 0, 180, p["white"], 3)
-    c.R(0.05, 0.52, 0.32, 0.6, p["navy"])
-
 def v_school(c, t):
     p = c.p
     c.R(0, 0.82, 1, 1, p["pale"], 0)
@@ -523,60 +392,15 @@ def v_school(c, t):
         body(c, x, 0.78, 0.06, 0.08, p["mid"]); head(c, x, 0.76, 0.025, "short", smile=False)
         c.R(x + 0.02, 0.79, x + 0.05, 0.83, (244, 214, 90), 2)
 
-def v_friends(c, t):
-    p = c.p
-    c.R(0, 0, 1, 0.5, p["pale"], 0); c.R(0, 0.5, 1, 0.66, p["mid"], 0)
-    c.R(0, 0.66, 1, 1, p["navy"])
-    for i, (x, hair) in enumerate(((0.35, "bun"), (0.65, "long"))):
-        bob = abs(math.sin(t * 3 + i)) * 0.015 if (t % 2.5) < 1.2 else 0
-        body(c, x, 0.48 - bob, 0.18, 0.2, ((244, 214, 90), p["white"])[i]); head(c, x, 0.43 - bob, 0.06, hair)
-        sw = wob(t, 0.9, 0.04, i)
-        c.L([(x - 0.04, 0.68), (x - 0.05 + sw, 0.86)], SKIN, 8); c.L([(x + 0.04, 0.68), (x + 0.05 - sw, 0.86)], SKIN, 8)
-
-def v_backyard(c, t):
-    p = c.p
-    c.R(0, 0.78, 1, 1, p["deep"])
-    for k in range(4): c.L([(0.05 + k * 0.25, 0.8), (0.2 + k * 0.25, 0.98)], p["navy"], 3)
-    g = ease(t / 3.5)
-    c.L([(0.14, 0.8), (0.14, 0.2)], p["white"], 10)  # banana plant
-    for a in (-1, 1): c.P([(0.14, 0.25), (0.14 + a * 0.18, 0.1 + wob(t, 0.5, 0.02)), (0.14 + a * 0.2, 0.2), (0.14, 0.32)], p["pale"], 3)
-    for k, x in enumerate((0.42, 0.62, 0.84)):  # rows of veg, growing
-        h = 0.08 + 0.18 * g
-        c.L([(x, 0.8), (x, 0.8 - h)], p["white"], 4)
-        for j in range(3):
-            y = 0.8 - h * (0.3 + j * 0.3)
-            c.E(x + 0.04 * (1 if j % 2 else -1), y, 0.04, 0.015, p["pale"], 2)
-        if g > 0.6:
-            col = ((176, 70, 50), (170, 196, 80), (244, 214, 90))[k]
-            c.E(x + 0.03, 0.8 - h * 0.5, 0.018 + 0.02 * (g - 0.6), 0.03, col, 2)
-    c.P([(0.6, 0.1), (0.78, 0.1), (0.82, 0.24), (0.58, 0.24)], p["mid"])  # watering can
-    c.L([(0.82, 0.16), (0.92, 0.08)], p["out"], 5)
-    for k in range(4):
-        s = (t * 1.5 + k / 4) % 1
-        c.O(0.92 - s * 0.05, 0.1 + s * 0.5, 0.01, p["white"], 0)
-
-def v_herbs(c, t):
-    p = c.p
-    c.R(0.3, 0.62, 0.7, 0.95, p["white"]); c.R(0.26, 0.57, 0.74, 0.64, p["pale"])     # tulsi thara
-    c.R(0.42, 0.72, 0.58, 0.84, p["pale"], 2)
-    c.L([(0.5, 0.58), (0.5, 0.3)], p["deep"], 5)
-    for i in range(26):                                                            # bushy tulsi
-        a = i * 2.4; rr = 0.04 + 0.16 * ((i * 37) % 26) / 26
-        x = 0.5 + rr * math.cos(a) + wob(t, 0.5, 0.008, i); y = 0.36 + rr * 0.9 * math.sin(a) * BW / BH
-        c.E(x, y, 0.035, 0.018, (p["mid"], p["sky"], p["deep"])[i % 3], 2)
-    for x in (0.1, 0.9):                                                           # aloe
-        for k in range(4): c.P([(x - 0.03, 0.95), (x + 0.03, 0.95), (x + (k - 1.5) * 0.06, 0.62 + (k % 2) * 0.05)], p["mid"], 2)
-    s_ = (t * 0.25) % 1
-    c.E(0.78 - s_ * 0.2, 0.2 + s_ * 0.7, 0.025, 0.012, p["sky"], 2)
-
 def v_stars(c, t):
     p = c.p
-    c.R(0, 0, 1, 1, p["navy"], 0)
+    c.R(0, 0, 1, 1, (78, 122, 196), 0)
     for k in range(12):
         tw = 0.5 + 0.5 * math.sin(t * 3 + k * 1.7)
         c.O((k * 0.37) % 1, (k * 0.23) % 0.4, 0.006 + 0.006 * tw, p["white"], 0)
-    c.R(0.05, 0.58, 0.45, 1, p["deep"]); c.P([(0.0, 0.6), (0.5, 0.6), (0.25, 0.44)], p["mid"])
-    c.R(0.55, 0.64, 0.95, 1, p["deep"]); c.P([(0.5, 0.66), (1.0, 0.66), (0.75, 0.5)], p["mid"])
+    c.R(0.05, 0.58, 0.45, 1, (246, 240, 226)); c.P([(0.0, 0.6), (0.5, 0.6), (0.25, 0.44)], TERRA)
+    c.R(0.55, 0.64, 0.95, 1, (250, 230, 170)); c.P([(0.5, 0.66), (1.0, 0.66), (0.75, 0.5)], TERRA)
+    for x in (0.18, 0.3, 0.68, 0.82): c.R(x - 0.04, 0.72, x + 0.04, 0.82, (255, 226, 120), 3)
     for cx, cy in ((0.25, 0.3), (0.75, 0.36)):
         sw = wob(t, 0.6, 8, cx * 5)
         c.L([(cx, 0.44 if cx < 0.5 else 0.5), (cx, cy)], p["white"], 2)
@@ -586,46 +410,395 @@ def v_stars(c, t):
             pts.append((cx + r * math.cos(a), cy + 0.05 + r * math.sin(a) * BW / BH))
         c.P(pts, (248, 224, 110), 3)
 
+# ================================================================== natural-colour boxes (v2)
+GREEN, LGREEN, DGREEN = (70, 150, 60), (140, 196, 80), (36, 100, 48)
+SOIL, LAT, TERRA = (120, 72, 40), (190, 96, 60), (178, 80, 42)
+WATER, STONE, STEEL = (84, 152, 212), (176, 174, 168), (206, 208, 214)
+LPINK, PINKTIP = (252, 238, 240), (232, 140, 168)
+
+def v_alarm_off(c, t):
+    p = c.p
+    k = ease((t - 1.2) / 0.5)
+    sh = wob(t, 11, 0.012) if t < 1.2 else 0
+    if t < 1.2:
+        for s in (-1, 1):
+            for j in range(2): c.A(0.5 + sh, 0.42, 0.33 + j * 0.07, 200 if s < 0 else -20, 250 if s < 0 else 30, p["deep"], 4)
+    c.L([(0.32 + sh, 0.62), (0.26 + sh, 0.7)], p["out"], 6); c.L([(0.68 + sh, 0.62), (0.74 + sh, 0.7)], p["out"], 6)
+    for s in (-1, 1): c.O(0.5 + s * 0.19 + sh, 0.2, 0.09, p["deep"])
+    c.O(0.5 + sh, 0.42, 0.26, p["yel"]); c.O(0.5 + sh, 0.42, 0.2, p["cream"])
+    c.L([(0.5 + sh, 0.42), (0.5 + sh, 0.3)], p["out"], 5); c.L([(0.5 + sh, 0.42), (0.6 + sh, 0.45)], p["out"], 5)
+    if k > 0: c.L([(0.18, 0.14), (0.18 + 0.64 * k, 0.14 + 0.56 * k)], (200, 52, 40), 16)
+    k2 = ease((t - 1.8) / 0.4)
+    col = tuple(int(a + (b - a) * k2) for a, b in zip((96, 186, 96), (176, 176, 176)))
+    c.R(0.3, 0.8, 0.7, 0.9, col, 4, r=40)
+    c.O(0.62 - 0.24 * k2, 0.85, 0.075, (255, 255, 255))
+    if t > 2.5:
+        for j in range(3):
+            s_ = ((t - 2.5) * 0.35 + j / 3) % 1
+            c.O(0.78 + 0.08 * s_, 0.3 - 0.25 * s_, 0.02 + 0.025 * s_, p["wash"], 3)
+
+def v_courtyard(c, t):
+    p = c.p
+    x0, x1, y0, y1 = 0.04, 0.96, 0.15, 0.85
+    ix0, ix1, iy0, iy1 = 0.3, 0.7, 0.35, 0.65
+    for (cx, cy) in ((0.02, 0.06), (0.98, 0.06), (0.02, 0.94), (0.98, 0.94)): c.O(cx, cy, 0.12, GREEN)
+    c.R(ix0, iy0, ix1, iy1, (232, 214, 186))                                        # open courtyard floor
+    sx = ix0 + 0.04 + 0.2 * (0.5 + 0.5 * math.sin(t * 0.4))
+    c.d.polygon(c.pts([(sx, iy0), (sx + 0.16, iy0), (sx + 0.1, iy1), (sx - 0.06, iy1)]), fill=(255, 244, 200, 140))
+    c.R(0.46, 0.46, 0.54, 0.54, (250, 250, 246)); c.O(0.5, 0.5, 0.035, GREEN, 3)     # tulsi thara
+    c.E(0.36, 0.6, 0.035, 0.02, WATER, 3)
+    roofs = [[(x0, y0), (x1, y0), (ix1, iy0), (ix0, iy0)], [(x1, y0), (x1, y1), (ix1, iy1), (ix1, iy0)],
+             [(x1, y1), (x0, y1), (ix0, iy1), (ix1, iy1)], [(x0, y1), (x0, y0), (ix0, iy0), (ix0, iy1)]]
+    for i, r in enumerate(roofs):
+        c.P(r, (TERRA, (196, 98, 54), TERRA, (160, 70, 36))[i])
+    for k in range(1, 8):
+        f = k / 8
+        c.L([(x0 + (x1 - x0) * f, y0), (ix0 + (ix1 - ix0) * f, iy0)], (130, 56, 30), 2)
+        c.L([(x0 + (x1 - x0) * f, y1), (ix0 + (ix1 - ix0) * f, iy1)], (130, 56, 30), 2)
+        c.L([(x0, y0 + (y1 - y0) * f), (ix0, iy0 + (iy1 - iy0) * f)], (130, 56, 30), 2)
+        c.L([(x1, y0 + (y1 - y0) * f), (ix1, iy0 + (iy1 - iy0) * f)], (130, 56, 30), 2)
+    a = t * 0.7                                                                      # Mum walking round the tulsi
+    mx, my = 0.5 + 0.13 * math.cos(a), 0.5 + 0.1 * math.sin(a)
+    c.E(mx, my, 0.05, 0.03, MUMKURTI); c.O(mx, my, 0.025, HAIR)
+    bx = -0.1 + ((t * 0.2) % 1.3)
+    c.L([(bx, 0.3), (bx + 0.04, 0.28 + wob(t, 3, 0.01)), (bx + 0.08, 0.3)], (60, 50, 50), 4)
+
+def v_verandah(c, t):
+    p = c.p
+    c.R(0, 0.74, 1, 1, (176, 52, 40))                                                # red-oxide floor
+    c.R(0.04, 0.0, 0.12, 0.74, (120, 72, 40))                                       # pillar
+    c.O(0.86, 0.68, 0.07, LAT); 
+    for j in range(5): c.E(0.86 + 0.06 * math.cos(j * 1.3 + wob(t, 0.4, 0.2)), 0.56 - 0.05 * abs(math.sin(j)), 0.05, 0.02, GREEN, 2)
+    c.L([(0.25, 0.85), (0.4, 0.55)], (110, 60, 30), 7); c.L([(0.7, 0.85), (0.55, 0.5)], (110, 60, 30), 7)
+    c.L([(0.35, 0.62), (0.8, 0.62)], (110, 60, 30), 7)                               # chair arms
+    c.P([(0.4, 0.55), (0.55, 0.5), (0.68, 0.78), (0.5, 0.82)], (234, 176, 64))       # cloth sling
+    for j in range(3): c.L([(0.43 + j * 0.05, 0.56 - j * 0.015), (0.54 + j * 0.05, 0.8 - j * 0.01)], (200, 80, 40), 3)
+    body(c, 0.55, 0.52, 0.16, 0.2, (246, 246, 240)); head(c, 0.5, 0.47, 0.06, "bun")
+    c.L([(0.6, 0.66), (0.82, 0.62)], SKIN, 10)                                       # legs up on the arms
+    c.R(0.5, 0.52, 0.64, 0.6, (250, 250, 250), 3)                                    # book
+    fl = (t * 0.5) % 1
+    if fl < 0.4: c.P([(0.57, 0.52), (0.57 + 0.07 * math.cos(fl * 7.8), 0.52 - 0.04 * math.sin(fl * 7.8)), (0.57 + 0.07 * math.cos(fl * 7.8), 0.6), (0.57, 0.6)], (255, 255, 255), 2)
+    c.R(0.2, 0.8, 0.28, 0.88, (236, 236, 236), 3)
+    for j in range(2):
+        s_ = (t * 0.5 + j / 2) % 1
+        c.L([(0.23 + j * 0.03 + wob(s_, 1.4, 0.01), 0.78 - s_ * 0.15), (0.23 + j * 0.03, 0.74 - s_ * 0.15)], (250, 250, 250), 3)
+
+def v_mango(c, t):
+    p = c.p
+    c.L([(0, 0.14), (1, 0.08)], (110, 64, 34), 10)
+    for i in range(6): c.E(0.08 + i * 0.17, 0.16 + 0.03 * (i % 2), 0.08, 0.03, GREEN, 3)
+    c.P([(0.05, 0.62), (0.45, 0.62), (0.41, 0.82), (0.09, 0.82)], (214, 170, 100))
+    for k in range(3): c.L([(0.07, 0.67 + k * 0.05), (0.43, 0.67 + k * 0.05)], (150, 100, 50), 2)
+    y = 0.25 if t < 0.6 else fall(t, 0.6, 0.25, 0.6, 0.6)
+    c.E(0.25, y, 0.07, 0.045, (246, 186, 40), 3)
+    if t > 2.0:
+        sx = 0.7 + 0.5 * (1 - ease((t - 2.0) / 0.6))
+        c.E(sx, 0.86, 0.26, 0.06, (250, 250, 250))
+        c.E(sx, 0.76, 0.18, 0.12, (246, 160, 30))                                    # sliced cheek, cubes
+        for i in range(-2, 3):
+            for j in range(-1, 2):
+                c.R(sx + i * 0.06 - 0.025, 0.76 + j * 0.06 - 0.022, sx + i * 0.06 + 0.025, 0.76 + j * 0.06 + 0.022, (252, 196, 50), 2)
+
+def _petal(c, bx, by, ang, ln, wd, fill, tip):
+    ca, sa = math.cos(ang), math.sin(ang)
+    asp = BW / BH
+    pt = lambda u, v: (bx + (u * sa + v * ca) * 1.0, by - (u * ca - v * sa) * asp)
+    c.P([pt(0, 0), pt(ln * 0.45, -wd), pt(ln, 0), pt(ln * 0.45, wd)], fill, 3)
+    c.P([pt(ln * 0.7, -wd * 0.45), pt(ln, 0), pt(ln * 0.7, wd * 0.45)], tip, 0)
+
+def v_lotus(c, t):
+    p = c.p
+    c.R(0, 0.45, 1, 1, (120, 176, 226), 0)
+    for k in range(3):
+        s_ = (t * 0.3 + k / 3) % 1
+        c.A(0.5, 0.74, 0.12 + 0.4 * s_, 200, 340, (230, 242, 252), 3)
+    for (x, y, r, a0) in ((0.2, 0.86, 0.16, 30), (0.82, 0.7, 0.13, 200), (0.75, 0.93, 0.1, 120)):
+        yb = y + wob(t, 0.4, 0.006, x * 9)
+        c.d.pieslice((c.X(x - r), c.Y(yb - r * 0.45 * BW / BH), c.X(x + r), c.Y(yb + r * 0.45 * BW / BH)), a0 + 25, a0 + 360, fill=GREEN, outline=c.o, width=int(3 * K))
+    c.L([(0.5, 0.74), (0.5, 0.95)], DGREEN, 6)
+    op = 0.35 + 0.45 * ease(t / 3.5)
+    base = (0.5, 0.7)
+    for j, a in enumerate((-1.5, -0.9, 0.9, 1.5)):                                  # back petals
+        _petal(c, base[0], base[1], a * op, 0.2, 0.06, LPINK, PINKTIP)
+    for j, a in enumerate((-0.55, 0.0, 0.55)):                                      # front petals
+        _petal(c, base[0], base[1] + 0.01, a * op, 0.24, 0.07, (255, 246, 248), PINKTIP)
+    c.E(0.5, 0.6 - 0.05 * op, 0.05, 0.02, (240, 210, 70), 3)
+    bx = 0.82; c.L([(bx, 0.68), (bx - 0.02, 0.4)], DGREEN, 5)                        # a bud
+    _petal(c, bx - 0.02, 0.42, 0.0, 0.14, 0.05, (250, 226, 232), PINKTIP)
+
+def v_paddy(c, t):
+    p = c.p
+    c.R(0, 0.0, 1, 0.3, (190, 220, 246), 0)
+    for i in range(6):
+        x = 0.05 + i * 0.18
+        c.L([(x, 0.34), (x + 0.02, 0.12)], (90, 70, 50), 4)
+        for a in (-1, 1): c.P([(x + 0.02, 0.12), (x + 0.02 + a * 0.1, 0.16), (x + 0.02 + a * 0.04, 0.1)], DGREEN, 2)
+    c.R(0, 0.3, 1, 1, (150, 200, 230), 0)
+    for r in range(7):
+        y = 0.34 + r * 0.1 * (1 + r * 0.12)
+        n = 9 + r * 2
+        for i in range(n):
+            x = (i + 0.5) / n
+            sw = wob(t, 0.5, 0.01 + 0.004 * r, x * 6 + r)
+            hgt = 0.03 + 0.012 * r
+            for d in (-1, 0, 1):
+                c.L([(x + d * 0.008, y), (x + d * 0.012 + sw, y - hgt)], (GREEN, LGREEN, DGREEN)[(i + r + d) % 3], 3 + r // 2)
+    ex = 0.65 - 0.06 * t if t < 3 else 0.47 - (t - 3) * 0.1
+    ey = 0.56 if t < 3 else 0.56 - (t - 3) * 0.12
+    c.E(ex, ey, 0.05, 0.025, (255, 255, 255), 3); c.L([(ex - 0.04, ey - 0.01), (ex - 0.07, ey - 0.06)], (255, 255, 255), 5)
+    c.O(ex - 0.075, ey - 0.065, 0.015, (255, 255, 255), 2); c.L([(ex - 0.085, ey - 0.06), (ex - 0.12, ey - 0.055)], (240, 200, 60), 3)
+    if t >= 3:
+        f = wob(t, 3, 0.04)
+        c.P([(ex, ey), (ex + 0.1, ey - 0.06 + f), (ex + 0.05, ey)], (255, 255, 255), 2)
+    else:
+        c.L([(ex, ey + 0.02), (ex + 0.01, ey + 0.08)], (240, 200, 60), 3)
+
+def v_tender_coconut(c, t):
+    p = c.p
+    c.L([(0.18, 0.95), (0.18, 0.16)], (110, 64, 34), 6)                              # umbrella
+    for i in range(6):
+        a0, a1 = math.pi + i * math.pi / 6, math.pi + (i + 1) * math.pi / 6
+        c.P([(0.18, 0.08), (0.18 + 0.32 * math.cos(a0), 0.2 + 0.1 * math.sin(a0) * 0.2), (0.18 + 0.32 * math.cos(a1), 0.2 + 0.1 * math.sin(a1) * 0.2)],
+            ((234, 110, 40), (250, 246, 236))[i % 2], 3)
+    c.R(0.05, 0.72, 0.62, 0.8, (130, 80, 40))
+    for i in range(5): c.O(0.1 + i * 0.12, 0.66 - (i % 2) * 0.03, 0.07, (120, 176, 60))
+    cx, cy = 0.72, 0.62
+    c.O(cx, cy, 0.17, (140, 190, 70))
+    cut = t > 0.9
+    if cut:
+        c.E(cx, cy - 0.09, 0.08, 0.025, (250, 248, 230))
+        fx = cx + 0.05 + min(t - 0.9, 0.6) * 0.3; fy = cy - 0.14 - min(t - 0.9, 0.6) * 0.2 + max(t - 1.2, 0) ** 2 * 0.6
+        if fy < 1.1: c.E(fx, fy, 0.06, 0.03, (140, 190, 70))
+    else:
+        c.P([(cx - 0.07, cy - 0.12), (cx + 0.07, cy - 0.12), (cx, cy - 0.2)], (160, 200, 90))
+    ang = 0.0 if t < 0.6 else min((t - 0.6) / 0.3, 1.0)
+    hx, hy = 0.98, 0.18 + 0.12 * ang
+    c.L([(1.05, 0.3), (hx, hy)], SKIN, 14)
+    c.P([(hx - 0.02, hy - 0.02), (hx - 0.26, hy + 0.02 + 0.08 * ang), (hx - 0.24, hy + 0.06 + 0.08 * ang), (hx, hy + 0.03)], STEEL)
+    if t > 1.6:
+        sy = fall(t, 1.6, 0.0, 0.32)
+        c.L([(cx + 0.02, sy + 0.18), (cx + 0.08, sy)], (250, 250, 250), 10); c.L([(cx + 0.02, sy + 0.18), (cx + 0.08, sy)], (230, 70, 50), 3)
+
+def v_backyard(c, t):
+    p = c.p
+    c.R(0, 0.0, 1, 0.42, (196, 224, 246), 0)
+    c.L([(0.86, 0.42), (0.88, 0.05)], (120, 80, 40), 8)                             # coconut palm
+    for a in (-2.6, -2.0, -1.2, -0.5): c.P([(0.88, 0.05), (0.88 + 0.2 * math.cos(a), 0.05 - 0.08 * math.sin(a) + 0.1), (0.88 + 0.12 * math.cos(a + 0.2), 0.05 - 0.04 * math.sin(a))], GREEN, 2)
+    c.O(0.12, 0.2, 0.14, DGREEN); c.O(0.26, 0.24, 0.1, GREEN); c.L([(0.16, 0.42), (0.16, 0.28)], (110, 64, 34), 8)
+    c.L([(0.32, 0.24), (0.72, 0.24)], (130, 90, 50), 4)                               # pandal (trellis)
+    for x in (0.32, 0.52, 0.72): c.L([(x, 0.24), (x, 0.42)], (130, 90, 50), 3)
+    for i in range(4):
+        gx = 0.38 + i * 0.1; gl = 0.06 + 0.06 * ease((t - i * 0.3) / 2)
+        c.E(gx, 0.27 + gl, 0.018, gl, (110, 170, 60), 2)
+    c.R(0, 0.42, 1, 1, (150, 96, 54), 0)
+    for r in range(3):
+        y = 0.52 + r * 0.16
+        c.R(0.02, y + 0.06, 0.98, y + 0.1, SOIL, 2)
+        for i in range(5):
+            x = 0.1 + i * 0.2; h = 0.04 + 0.06 * ease((t - r * 0.4 - i * 0.1) / 2.5)
+            c.L([(x, y + 0.06), (x + wob(t, 0.5, 0.006, i), y + 0.06 - h)], DGREEN, 4)
+            for s in (-1, 1): c.E(x + s * 0.03, y + 0.06 - h * 0.6, 0.03, 0.012, (GREEN, LGREEN)[i % 2], 2)
+            if h > 0.08: c.O(x + 0.015, y + 0.06 - h * 0.4, 0.016, ((214, 50, 40), (230, 120, 30), (100, 170, 50))[r], 2)
+    hx = 0.9; hy = 0.5 + wob(t, 0.6, 0.01)
+    c.L([(1.05, 0.62), (hx, hy + 0.04)], SKIN, 12)
+    c.P([(hx - 0.2, hy), (hx - 0.02, hy), (hx, hy + 0.1), (hx - 0.18, hy + 0.1)], (70, 140, 200))
+    c.L([(hx - 0.2, hy + 0.03), (hx - 0.3, hy - 0.02)], (70, 140, 200), 6)
+    for k in range(5):
+        s_ = (t * 1.6 + k / 5) % 1
+        c.O(hx - 0.31 - s_ * 0.04 + 0.01 * k, hy + s_ * 0.2, 0.008, (210, 236, 252), 0)
+
+def v_herbs(c, t):
+    p = c.p
+    c.R(0, 0.78, 1, 1, SOIL, 0)
+    c.R(0.3, 0.62, 0.7, 0.95, (250, 250, 246)); c.R(0.26, 0.57, 0.74, 0.64, (236, 232, 222))
+    c.L([(0.5, 0.58), (0.5, 0.3)], (110, 64, 34), 5)
+    for i in range(30):
+        a = i * 2.4; rr = 0.04 + 0.16 * ((i * 37) % 30) / 30
+        x = 0.5 + rr * math.cos(a) + wob(t, 0.5, 0.008, i); y = 0.36 + rr * 0.9 * math.sin(a) * BW / BH
+        c.E(x, y, 0.035, 0.018, (GREEN, LGREEN, DGREEN)[i % 3], 2)
+    for x in (0.1, 0.9):
+        for k in range(4): c.P([(x - 0.03, 0.95), (x + 0.03, 0.95), (x + (k - 1.5) * 0.06, 0.62 + (k % 2) * 0.05)], (90, 160, 90), 2)
+    s_ = (t * 0.25) % 1
+    c.E(0.78 - s_ * 0.2, 0.2 + s_ * 0.6, 0.025, 0.012, LGREEN, 2)
+
+def v_well(c, t):
+    p = c.p
+    c.R(0, 0.9, 1, 1, (150, 96, 54), 0)
+    c.R(0.15, 0.62, 0.85, 0.96, LAT); c.E(0.5, 0.62, 0.35, 0.05, (40, 70, 120))
+    for k in range(3): c.L([(0.15, 0.7 + k * 0.08), (0.85, 0.7 + k * 0.08)], (150, 70, 40), 3)
+    for k in range(4):
+        for r in range(3): c.L([(0.25 + k * 0.17 + (r % 2) * 0.08, 0.62 + r * 0.08), (0.25 + k * 0.17 + (r % 2) * 0.08, 0.7 + r * 0.08)], (150, 70, 40), 3)
+    c.L([(0.18, 0.62), (0.18, 0.12)], (110, 64, 34), 9); c.L([(0.82, 0.62), (0.82, 0.12)], (110, 64, 34), 9); c.L([(0.14, 0.12), (0.86, 0.12)], (110, 64, 34), 9)
+    c.O(0.5, 0.16, 0.05, (150, 100, 60))
+    y = 0.36 + 0.22 * (0.5 + 0.5 * math.cos(t * 1.1))
+    c.L([(0.5, 0.2), (0.5, y)], (90, 60, 40), 3)
+    c.P([(0.43, y), (0.57, y), (0.55, y + 0.1), (0.45, y + 0.1)], STEEL)
+    if y < 0.45:
+        for k in range(3): c.O(0.45 + k * 0.05, y + 0.12 + ((t * 2 + k * 0.3) % 1) * 0.15, 0.012, (150, 200, 240), 0)
+
+def v_friends(c, t):
+    p = c.p
+    c.R(0, 0, 1, 0.5, (200, 226, 248), 0); c.R(0, 0.5, 1, 0.68, WATER, 0)
+    for k in range(4): c.A(0.15 + k * 0.25, 0.58, 0.04, 200, 340, (240, 248, 255), 3)
+    c.R(0, 0.66, 1, 1, STONE)
+    for r in range(4):
+        for k in range(5): c.R(k * 0.22 - (r % 2) * 0.11, 0.66 + r * 0.085, k * 0.22 - (r % 2) * 0.11 + 0.22, 0.66 + (r + 1) * 0.085, STONE, 2)
+    for i, (x, hair, col) in enumerate(((0.35, "bun", (244, 200, 60)), (0.65, "long", (240, 240, 236)))):
+        bob = abs(math.sin(t * 3 + i)) * 0.015 if (t % 2.5) < 1.2 else 0
+        body(c, x, 0.48 - bob, 0.18, 0.2, col); head(c, x, 0.43 - bob, 0.06, hair)
+        sw = wob(t, 0.9, 0.04, i)
+        c.L([(x - 0.04, 0.68), (x - 0.05 + sw, 0.86)], SKIN, 8); c.L([(x + 0.04, 0.68), (x + 0.05 - sw, 0.86)], SKIN, 8)
+
+def v_bus(c, t):
+    p = c.p
+    c.R(0, 0, 1, 1, (200, 228, 250), 0)
+    for i in range(5):
+        x = 1.1 - ((t * 0.7 + i * 0.3) % 1.5)
+        if i % 2:
+            c.R(x, 0.36, x + 0.16, 0.6, ((250, 236, 190), (240, 200, 150))[i % 2]); c.P([(x - 0.02, 0.36), (x + 0.18, 0.36), (x + 0.08, 0.28)], TERRA)
+        else:
+            c.L([(x, 0.62), (x + 0.02, 0.2)], (110, 70, 40), 6)
+            for a in (-1, 1): c.P([(x + 0.02, 0.2), (x + 0.02 + a * 0.14, 0.26), (x + 0.02 + a * 0.06, 0.18)], GREEN, 2)
+    c.R(0, 0.6, 1, 0.66, (120, 120, 120), 0)
+    c.R(0, 0, 1, 0.12, (236, 180, 40)); c.R(0, 0.62, 1, 1, (236, 180, 40)); c.R(0, 0, 0.06, 1, (236, 180, 40)); c.R(0.94, 0, 1, 1, (236, 180, 40))
+    c.R(0, 0.7, 1, 0.75, (200, 50, 40), 0)
+    c.L([(0.06, 0.6), (0.94, 0.6)], STEEL, 8)
+    c.L([(0.06, 0.58), (0.45, 0.58)], SKIN, 16); c.E(0.47, 0.58, 0.05, 0.022, SKIN)
+    w = wob(t, 1.8, 0.03)
+    c.L([(0.7, 0.9), (0.76 + w, 0.75), (0.8 - w, 0.7)], HAIR, 10)
+
 def v_neighbours(c, t):
     p = c.p
-    c.R(0.44, 0.45, 0.56, 1, p["pale"])
-    for k in range(5): c.L([(0.44, 0.45 + k * 0.11), (0.56, 0.45 + k * 0.11)], p["sky"], 2)
-    body(c, 0.2, 0.55, 0.22, 0.45, (244, 214, 90)); head(c, 0.2, 0.5, 0.07, "bun")
-    body(c, 0.8, 0.55, 0.24, 0.45, p["white"]); head(c, 0.8, 0.5, 0.07, "short")
+    body(c, 0.22, 0.42, 0.24, 0.4, (244, 200, 60)); head(c, 0.22, 0.37, 0.07, "bun")
+    body(c, 0.78, 0.42, 0.26, 0.4, (240, 240, 236)); head(c, 0.78, 0.37, 0.07, "short")
     k = 0.5 - 0.5 * math.cos(t * 1.2)
-    x = 0.28 + 0.44 * k; y = 0.5 - 0.22 * math.sin(math.pi * k)
-    c.R(x - 0.05, y - 0.08, x + 0.05, y + 0.06, (230, 232, 236)); c.L([(x - 0.05, y - 0.03), (x + 0.05, y - 0.03)], p["out"], 2)
+    x = 0.3 + 0.4 * k; y = 0.45 - 0.16 * math.sin(math.pi * k)
+    c.L([(0.3, 0.5), (x - 0.04, y + 0.03)], SKIN, 8) if k < 0.55 else c.L([(0.7, 0.5), (x + 0.04, y + 0.03)], SKIN, 8)
+    c.R(x - 0.06, y - 0.08, x + 0.06, y + 0.06, STEEL); c.L([(x - 0.06, y - 0.03), (x + 0.06, y - 0.03)], p["out"], 2)
     c.A(x, y - 0.08, 0.04, 180, 360, p["out"], 3)
-    c.L([(0.27, 0.6), (x - 0.04, y + 0.04)], SKIN, 8) if k < 0.55 else c.L([(0.73, 0.6), (x + 0.04, y + 0.04)], SKIN, 8)
+    c.R(0, 0.6, 1, 1, LAT)                                                           # low laterite wall
+    for r in range(4):
+        for j in range(6): c.R(j * 0.2 - (r % 2) * 0.1, 0.6 + r * 0.1, j * 0.2 - (r % 2) * 0.1 + 0.2, 0.7 + r * 0.1, LAT, 2)
+    c.R(0, 0.58, 1, 0.62, (220, 210, 196))
 
-# ------------------------------------------------------------------ layout
-WARM_LIST = [v_mum_drive, v_dad_serve, v_alarm_off, v_house, v_room, v_easel, v_sadya, v_fritters, v_chai,
-             v_coconut_oil, v_jasmine, v_mango, v_pookalam, v_chenda, v_kathakali, v_three_faiths, v_sun]
-BLUE_LIST = [v_tender_coconut, v_herbal_water, v_well, v_lotus, v_swing, v_ferry, v_bus, v_hospital, v_street_art,
-             v_cycle, v_canoe, v_fishing_net, v_school, v_friends, v_backyard, v_herbs, v_stars, v_neighbours]
+def v_fishing_net(c, t):
+    p = c.p
+    c.R(0, 0, 1, 0.6, (250, 220, 160), 0)
+    c.O(0.18, 0.34, 0.07, (244, 150, 60))
+    c.R(0, 0.6, 1, 1, WATER, 0)
+    for k in range(4): c.A(0.15 + k * 0.24, 0.72 + (k % 2) * 0.1, 0.05, 200, 340, (230, 244, 255), 3)
+    c.R(0.0, 0.56, 0.34, 0.62, (130, 84, 46))                                        # jetty
+    for x in (0.04, 0.16, 0.28): c.L([(x, 0.62), (x, 0.85)], (110, 64, 34), 5)
+    dip = 0.5 + 0.5 * math.sin(t * 0.7)                                             # 0 = up, 1 = in the water
+    a = math.radians(38 - 30 * dip)
+    px, py = 0.26, 0.56
+    L = 0.5
+    tx, ty = px + L * math.cos(a), py - L * math.sin(a) * BW / BH
+    bx, by = px - 0.22 * math.cos(a), py + 0.22 * math.sin(a) * BW / BH
+    c.L([(px, py), (px + 0.05, 0.12)], (110, 64, 34), 5)                              # king post and stay
+    c.L([(px + 0.05, 0.12), (tx, ty)], (90, 60, 40), 2); c.L([(px + 0.05, 0.12), (bx, by)], (90, 60, 40), 2)
+    c.L([(bx, by), (tx, ty)], (110, 64, 34), 8)                                       # main beam
+    for j in range(3):                                                              # counterweight stones
+        c.L([(bx + j * 0.03, by), (bx + j * 0.03, by + 0.1)], (90, 60, 40), 2); c.O(bx + j * 0.03, by + 0.11, 0.02, STONE, 2)
+    span = 0.3
+    ends = [(tx - span, ty + 0.12), (tx + span * 0.9, ty + 0.1), (tx - span * 0.5, ty + 0.2), (tx + span * 0.45, ty + 0.2)]
+    for ex, ey in ends: c.L([(tx, ty), (ex, ey)], (110, 64, 34), 4)                  # four bamboo arms
+    sag = 0.1
+    for k in range(9):                                                              # net mesh hanging between the arms
+        f = k / 8
+        x0 = ends[0][0] + (ends[1][0] - ends[0][0]) * f; y0 = ends[0][1] + (ends[1][1] - ends[0][1]) * f
+        c.L([(x0, y0), (tx + (x0 - tx) * 0.5, y0 + sag + 0.06 * math.sin(math.pi * f))], (250, 250, 250), 2)
+    c.A(tx - 0.02, ends[0][1] + 0.02, span * 0.95, 15, 165, (250, 250, 250), 3)
+
+# ------------------------------------------------------------------ layout: final 5x7 wall
+# warm (sun) cells: cols 0-1 and col 2 rows 0-2.  blue (sea) cells: the rest.  The first 9 sit in the centre 3x3.
+def is_warm(cell): return cell[0] <= 1 or (cell[0] == 2 and cell[1] <= 2)
+
+FIRST = [((1, 2), v_mum_drive), ((2, 2), v_dad_serve),                      # 2 on screen
+         ((1, 3), v_alarm_off),                                             # 3
+         ((2, 3), v_courtyard), ((3, 2), v_fishing_net), ((3, 3), v_cycle),  # 6
+         ((1, 4), v_easel), ((2, 4), v_backyard), ((3, 4), v_three_faiths)]  # 9
 SUN_CELL = (0, 4)
+REST_WARM = [v_verandah, v_sadya, v_fritters, v_chai, v_coconut_oil, v_jasmine, v_mango, v_pookalam, v_chenda,
+             v_kathakali, v_tender_coconut, v_herbal_water]
+REST_BLUE = [v_well, v_lotus, v_swing, v_ferry, v_bus, v_hospital, v_paddy, v_canoe, v_school, v_friends, v_herbs,
+             v_stars, v_neighbours]
 
-def layout():
-    warm_cells = [(c, r) for r in range(ROWS) for c in range(2)] + [(2, r) for r in range(3)]
-    blue_cells = [(2, r) for r in range(3, ROWS)] + [(c, r) for r in range(ROWS) for c in (3, 4)]
-    warm_cells.remove(SUN_CELL)
-    out = {SUN_CELL: (v_sun, True)}
-    order_w = [v for v in WARM_LIST if v is not v_sun]
-    for cell, v in zip(warm_cells, order_w): out[cell] = (v, True)
-    for cell, v in zip(blue_cells, BLUE_LIST): out[cell] = (v, False)
+def build_layout():
+    out = {cell: v for cell, v in FIRST}
+    out[SUN_CELL] = v_sun
+    free = [(c_, r_) for r_ in range(ROWS) for c_ in range(COLS) if (c_, r_) not in out]
+    fw = [c_ for c_ in free if is_warm(c_)]; fb = [c_ for c_ in free if not is_warm(c_)]
+    assert len(fw) == len(REST_WARM) and len(fb) == len(REST_BLUE), (len(fw), len(fb))
+    for c_, v in zip(fw, REST_WARM): out[c_] = v
+    for c_, v in zip(fb, REST_BLUE): out[c_] = v
     return out
 
-LAYOUT = layout()
-BGS = {}
+LAYOUT = build_layout()
+ORDER = [cell for cell, _ in FIRST] + sorted([c_ for c_ in LAYOUT if c_ not in dict(FIRST)], key=lambda c_: (c_[1] * 7 + c_[0] * 3) % 35)
 
-def cell_img(cell, t):
-    v, warm = LAYOUT[cell]
-    key = cell
-    if key not in BGS: BGS[key] = bg_for(warm, hash(cell) % 997 + 3)
-    img = BGS[key].copy()
-    c = C(img, WARM if warm else BLUE)
-    v(c, t + (cell[0] * 0.37 + cell[1] * 0.21) % 0.8)
-    return img.resize((CW, CH), Image.LANCZOS)
+# ------------------------------------------------------------------ timing (seconds)
+STAGES = [(2, (1, 2)), (3, (1, 3)), (6, (2, 3)), (9, (3, 3)), (35, (COLS, ROWS))]
+T_STAGE = [0.0, 2.6, 4.9, 7.6, 10.3]
+TR = 0.7                      # transition length
+T_PUSH, T_REVEAL, T_END = 13.4, 15.0, 17.0
+STAGE_POS = {                 # slot (col,row) of each box in the smaller grids
+    2: {(1, 2): (0, 0), (2, 2): (0, 1)},
+    3: {(1, 2): (0, 0), (2, 2): (0, 1), (1, 3): (0, 2)},
+    6: {(1, 2): (0, 0), (2, 2): (1, 0), (1, 3): (0, 1), (2, 3): (1, 1), (3, 2): (0, 2), (3, 3): (1, 2)},
+    9: {cell: (cell[0] - 1, cell[1] - 2) for cell, _ in FIRST},
+}
+
+def final_rect(cell):
+    ci, ri = cell
+    return (GAP + ci * (CW + GAP), GAP + ri * (CH + GAP), CW, CH)
+
+def stage_rect(n, grid, cell):
+    if n == 35: return final_rect(cell)
+    cols, rows = grid; M = 40; g = 28
+    sw, sh = (W - 2 * M) / cols, (H - 2 * M) / rows
+    a = CW / CH
+    bw = min(sw - g, (sh - g) * a); bh = bw / a
+    sc, sr = STAGE_POS[n][cell]
+    return (M + sc * sw + (sw - bw) / 2, M + sr * sh + (sh - bh) / 2, bw, bh)
+
+def appear_time(cell):
+    k = ORDER.index(cell)
+    for s, (n, _) in enumerate(STAGES):
+        if k < n:
+            base = T_STAGE[s]
+            if s == 4: return base + 0.035 * (k - 9)
+            return base
+    return 0
+
+def lerp_rect(a, b, k): return tuple(x + (y - x) * k for x, y in zip(a, b))
+
+def box_state(cell, t):
+    """rect (x,y,w,h) and alpha for one box at time t, or None if not on screen yet."""
+    ta = appear_time(cell)
+    if t < ta: return None
+    s = max(i for i, ts in enumerate(T_STAGE) if ts <= t)
+    n, grid = STAGES[s]
+    k = ORDER.index(cell)
+    target = stage_rect(n, grid, cell)
+    first_stage = next(i for i, (nn, _) in enumerate(STAGES) if k < nn)
+    if s == first_stage:            # sliding in like a scroll from below
+        dur = TR if s < 4 else 0.45
+        e = ease((t - ta) / dur)
+        x, y, w_, h_ = target
+        return (x, y + (1 - e) * 260, w_, h_), e
+    prev = stage_rect(STAGES[s - 1][0], STAGES[s - 1][1], cell)
+    e = ease((t - T_STAGE[s]) / TR)
+    return lerp_rect(prev, target, e), 1.0
+
+BGS = {}
+def cell_img(cell, t, size):
+    v = LAYOUT[cell]; warm = is_warm(cell)
+    if cell not in BGS: BGS[cell] = bg_for(warm, (cell[0] * 31 + cell[1] * 7) % 997 + 3)
+    img = BGS[cell].copy()
+    pal = {**(BLUE if warm else WARM), **(WARM if warm else BLUE)}
+    v(C(img, pal), max(t, 0.0))
+    return img.resize((max(1, int(size[0])), max(1, int(size[1]))), Image.LANCZOS)
 
 WEAVE = None
 def linen_overlay():
@@ -634,46 +807,80 @@ def linen_overlay():
     fine = (np.indices((H, W)).sum(0) % 4 < 2) * 0.5 - 0.25
     return (1 + 0.05 * np.tanh(0.5 * rows + 0.5 * cols) + 0.012 * fine)[..., None].astype(np.float32)
 
+def wall(t):
+    base = Image.new("RGBA", (W, H), PAPER + (255,))
+    for cell in ORDER:
+        st = box_state(cell, t)
+        if st is None: continue
+        (x, y, w_, h_), al = st
+        if t >= T_STAGE[4] + 1.5:
+            x += 3 * math.sin(t * 0.5 + cell[0] + cell[1] * 2); y += 3 * math.cos(t * 0.4 + cell[1] + cell[0])
+        im = cell_img(cell, t - appear_time(cell), (w_, h_))
+        if al < 1:
+            a_ = im.split()[3].point(lambda v_: int(v_ * al)); im.putalpha(a_)
+        base.alpha_composite(im, (int(x), int(y)))
+    return base
+
+def painting_card(t):
+    base = Image.new("RGB", (W, H), PAPER)
+    k = ease((t - T_REVEAL) / (T_END - T_REVEAL))
+    z = 1.25 - 0.25 * k
+    pw = int(W * 0.94 * z); ph = int(pw * PAINT.height / PAINT.width)
+    im = PAINT.resize((pw, ph), Image.LANCZOS)
+    base.paste(im, ((W - pw) // 2, (H - ph) // 2 - 60))
+    return base
+
 def frame(t):
     global WEAVE
     if WEAVE is None: WEAVE = linen_overlay()
-    base = Image.new("RGBA", (W, H), PAPER + (255,))
-    rng = np.random.default_rng(5)
-    for (ci, ri) in LAYOUT:
-        x = GAP + ci * (CW + GAP); y = GAP + ri * (CH + GAP)
-        dx = 3 * math.sin(t * 0.5 + ci + ri * 2); dy = 3 * math.cos(t * 0.4 + ri + ci)  # boxes drift slowly
-        base.alpha_composite(cell_img((ci, ri), t), (int(x + dx), int(y + dy)))
-    z = 1.0 + 0.035 * (t / 6)                       # slow push in
-    if z > 1.0:
-        zw, zh = int(W / z), int(H / z)
-        base = base.crop(((W - zw) // 2, (H - zh) // 2, (W - zw) // 2 + zw, (H - zh) // 2 + zh)).resize((W, H), Image.LANCZOS)
-    a = np.asarray(base.convert("RGB")).astype(np.float32) * WEAVE
+    if t < T_PUSH:
+        img = wall(t).convert("RGB")
+    else:
+        img = wall(T_PUSH + 0.0 * (t - T_PUSH) + (t - T_PUSH) * 0.5).convert("RGB")
+        x, y, w_, h_ = final_rect(SUN_CELL)
+        cx, cy = x + w_ / 2, y + h_ / 2
+        k = ease((t - T_PUSH) / (T_REVEAL - T_PUSH))
+        z = 1 + (H / h_ - 1) * k ** 1.6
+        fx = W / 2 + (cx - W / 2) * min(1, k * 1.4); fy = H / 2 + (cy - H / 2) * min(1, k * 1.4)
+        zw, zh = W / z, H / z
+        box = (fx - zw / 2, fy - zh / 2, fx + zw / 2, fy + zh / 2)
+        img = img.transform((W, H), Image.EXTENT, box, Image.BICUBIC)
+        if t > T_REVEAL - 0.5:
+            img = Image.blend(img, painting_card(t), ease((t - (T_REVEAL - 0.5)) / 0.8))
+    a = np.asarray(img).astype(np.float32) * WEAVE
     return Image.fromarray(a.clip(0, 255).astype(np.uint8))
 
 def job(i): return frame(i / FPS).tobytes()
 
+def sheet(times, name="sheet.jpg"):
+    ims = [frame(t).resize((270, 480), Image.LANCZOS) for t in times]
+    out = Image.new("RGB", (270 * len(ims) + 8 * (len(ims) + 1), 496), PAPER)
+    for i, im in enumerate(ims): out.paste(im, (8 + i * 278, 8))
+    out.save(os.path.join(HERE, name), quality=90)
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "still"
     if mode == "still":
-        frame(float(sys.argv[2]) if len(sys.argv) > 2 else 2.0).save(os.path.join(HERE, "boxwall_still.jpg"), quality=92)
+        frame(float(sys.argv[2]) if len(sys.argv) > 2 else 12.5).save(os.path.join(HERE, "boxwall_still.jpg"), quality=92)
+    elif mode == "sheet":
+        sheet([float(x) for x in sys.argv[2:]])
     elif mode == "zoom":
         t = float(sys.argv[2]) if len(sys.argv) > 2 else 3.0
-        cells = sorted(LAYOUT); sheet = Image.new("RGB", (7 * BW // 2 + 8 * 6, 5 * BH // 2 + 6 * 6), PAPER)
+        cells = ORDER
+        sw_, sh_ = BW // 3, BH // 3
+        out = Image.new("RGB", (7 * sw_ + 8 * 6, 5 * sh_ + 6 * 6), PAPER)
         for k, cell in enumerate(cells):
-            v, warm = LAYOUT[cell]
-            if cell not in BGS: BGS[cell] = bg_for(warm, hash(cell) % 997 + 3)
-            im = BGS[cell].copy(); v(C(im, WARM if warm else BLUE), t)
-            im = im.resize((BW // 2, BH // 2), Image.LANCZOS)
-            sheet.paste(im.convert("RGB"), (6 + (k % 7) * (BW // 2 + 6), 6 + (k // 7) * (BH // 2 + 6)))
-        sheet.save(os.path.join(HERE, "boxwall_zoom.jpg"), quality=90)
+            im = cell_img(cell, t, (sw_, sh_))
+            out.paste(im.convert("RGB"), (6 + (k % 7) * (sw_ + 6), 6 + (k // 7) * (sh_ + 6)))
+        out.save(os.path.join(HERE, "boxwall_zoom.jpg"), quality=90)
     elif mode == "video":
-        secs = float(sys.argv[2]) if len(sys.argv) > 2 else 6
+        secs = float(sys.argv[2]) if len(sys.argv) > 2 else T_END
         n = int(secs * FPS)
-        out = os.path.join(HERE, "boxwall.mp4")
-        p = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS),
-                              "-i", "-", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
-                             stdin=subprocess.PIPE)
+        outp = os.path.join(HERE, "boxwall.mp4")
+        pr = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS),
+                               "-i", "-", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart", outp],
+                              stdin=subprocess.PIPE)
         with Pool(4) as pool:
-            for b in pool.imap(job, range(n), chunksize=4): p.stdin.write(b)
-        p.stdin.close(); p.wait()
-        print("wrote", out)
+            for b in pool.imap(job, range(n), chunksize=2): pr.stdin.write(b)
+        pr.stdin.close(); pr.wait()
+        print("wrote", outp)
