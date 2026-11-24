@@ -14,7 +14,7 @@ GX, GY = B.GIRL[0], B.GIRL[1] - 660
 # (start, end, text): cut-letter lines, popped in
 LINES = [(0.4, 3.6, "Draw a box. Step in."), (3.8, 6.9, "Shut out the noise. Yours too."),
          (13.2, 16.0, "There's a child in there who never stopped playing."), (16.2, 19.0, "Hand her your problems and a crayon."),
-         (19.3, 24.9, "She'll fix what your mind couldn't."), (25.3, 28.9, "There. I have just taught you how to meditate.")]
+         (19.3, 24.9, "She'll fix what your mind can't."), (25.3, 28.9, "There. I have just taught you how to meditate.")]
 TXT = [B.r2.ransom(t, (173, 51, 97), size=76 if len(t) < 40 else 68, seed=100 + i, max_w=880) for i, (_, _, t) in enumerate(LINES)]
 
 

@@ -529,8 +529,8 @@ COPY = {
     "02": "Shut out the noise. Yours too.",
     "05": "There's a child in there who never stopped playing.",
     "06": "Hand her your problems and a crayon.",
-    "07": "She'll fix what your mind couldn't.",
-    "07b": "She'll fix what your mind couldn't.",
+    "07": "She'll fix what your mind can't.",
+    "07b": "She'll fix what your mind can't.",
     "08": "There. I have just taught you how to meditate.",
 }
 
