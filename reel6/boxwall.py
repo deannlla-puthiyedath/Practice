@@ -74,10 +74,24 @@ class C:
     def A(self, cx, cy, r, a0, a1, col=None, w=4):
         rr = r * BW
         self.d.arc((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), a0, a1, fill=col or self.o, width=max(1, int(w * K)))
+    def S(self, name, cx, bottom, height, top_frac=1.0, flip=False, dy_crop=0.0):
+        """Paste a cast sprite: `height` (box heights) is the shown part; top_frac keeps only the top of the figure."""
+        im = SPRITE(name)
+        if top_frac < 1: im = im.crop((0, 0, im.width, int(im.height * top_frac)))
+        sc = height * BH / im.height
+        im = im.resize((max(1, int(im.width * sc)), max(1, int(im.height * sc))), Image.LANCZOS)
+        if flip: im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        self.img.alpha_composite(im, (int(self.X(cx) - im.width / 2), int(self.Y(bottom) - im.height)))
     def PIE(self, cx, cy, r, a0, a1, fill, w=4):
         rr = r * BW
         self.d.pieslice((self.X(cx) - rr, self.Y(cy) - rr, self.X(cx) + rr, self.Y(cy) + rr), a0, a1, fill=fill,
                         outline=self.o if w else None, width=max(1, int(w * K)))
+
+_SPR = {}
+def SPRITE(name):
+    if name not in _SPR: _SPR[name] = Image.open(os.path.join(HERE, "cast", name + ".png")).convert("RGBA")
+    return _SPR[name]
+DADSKIN = (228, 188, 156)
 
 def ease(x): x = min(max(x, 0.0), 1.0); return x * x * (3 - 2 * x)
 def fall(t, t0, y0, y1, dur=0.45):
@@ -110,36 +124,36 @@ def body(c, cx, top, wid, ht, col):
 # ================================================================== WARM boxes
 def v_mum_drive(c, t):
     p = c.p
+    c.R(0, 0, 1, 1, (200, 228, 250), 0)
     for i in range(6):  # palms rushing past
         x = (1.2 - ((t * 0.55 + i * 0.27) % 1.6))
-        c.L([(x, 0.62), (x + 0.02, 0.18)], p["rust"], 7)
-        for a in (-1, 1):
-            c.P([(x + 0.02, 0.18), (x + 0.02 + a * 0.16, 0.22), (x + 0.02 + a * 0.08, 0.16)], p["lime"])
-    c.P([(0, 0), (1, 0), (1, 0.1), (0, 0.1)], p["org"]); c.P([(0, 0.62), (1, 0.62), (1, 1), (0, 1)], p["org"])
-    c.R(0, 0.1, 0.05, 0.62, p["org"]); c.R(0.95, 0.1, 1, 0.62, p["org"])
-    bob = wob(t, 2.2, 0.006)
-    body(c, 0.3, 0.52 + bob, 0.26, 0.4, MUMKURTI); head(c, 0.3, 0.42 + bob, 0.085, "long")
-    body(c, 0.7, 0.54 - bob, 0.24, 0.4, p["yel"]); head(c, 0.7, 0.44 - bob, 0.08, "bun", hoops=True)
-    c.A(0.18, 0.74, 0.12, 200, 340, p["out"], 8)   # steering wheel
+        c.L([(x, 0.62), (x + 0.02, 0.18)], (110, 70, 40), 7)
+        for a in (-1, 1): c.P([(x + 0.02, 0.18), (x + 0.02 + a * 0.16, 0.22), (x + 0.02 + a * 0.08, 0.16)], GREEN)
+    bob = wob(t, 2.2, 0.004)
+    c.S("mum", 0.3, 0.98 + bob, 0.8, top_frac=0.36)
+    c.S("girl_open", 0.72, 0.98 - bob, 0.78, top_frac=0.34)
+    c.P([(0, 0), (1, 0), (1, 0.1), (0, 0.1)], p["org"]); c.P([(0, 0.66), (1, 0.66), (1, 1), (0, 1)], p["org"])
+    c.R(0, 0.1, 0.05, 0.66, p["org"]); c.R(0.95, 0.1, 1, 0.66, p["org"])
+    c.A(0.24, 0.82, 0.16, 200, 340, (60, 50, 50), 10)   # steering wheel
 
 def v_dad_serve(c, t):
     p = c.p
+    c.S("dad_laugh" if (t % 3) > 2.2 else "dad", 0.68, 0.98, 0.95, top_frac=0.42)
     c.R(0, 0.72, 1, 1, p["rust"])
-    c.E(0.42, 0.78, 0.3, 0.06, (236, 238, 240))  # steel plate
+    c.E(0.36, 0.8, 0.28, 0.06, (236, 238, 240))  # steel plate
     pile = min(t / 3.0, 1)
-    c.E(0.42, 0.77 - 0.02 * pile, 0.05 + 0.13 * pile, 0.015 + 0.035 * pile, (252, 250, 244))
-    if t > 3.2: c.E(0.58, 0.77, 0.06, 0.025, p["org"])
-    body(c, 0.72, 0.3, 0.4, 0.45, DADSHIRT); head(c, 0.72, 0.2, 0.1, "dad")
-    lx, ly = 0.5, 0.52 + wob(t, 1.1, 0.02)
-    c.L([(0.62, 0.42), (lx, ly)], SKIN, 12)
-    c.L([(lx, ly), (lx - 0.06, ly + 0.05)], (200, 200, 205), 6); c.E(lx - 0.08, ly + 0.07, 0.05, 0.025, (220, 222, 226))
+    c.E(0.36, 0.79 - 0.02 * pile, 0.05 + 0.13 * pile, 0.015 + 0.035 * pile, (252, 250, 244))
+    if t > 3.2: c.E(0.52, 0.79, 0.06, 0.025, p["org"])
+    lx, ly = 0.42, 0.58 + wob(t, 1.1, 0.02)
+    c.L([(0.56, 0.62), (lx, ly)], DADSKIN, 14)
+    c.L([(lx, ly), (lx - 0.06, ly + 0.05)], STEEL, 6); c.E(lx - 0.08, ly + 0.07, 0.05, 0.025, STEEL)
     if t < 3.0:
         for k in range(8):
-            yy = ((t * 1.6 + k * 0.125) % 1) * 0.14 + ly + 0.09
+            yy = ((t * 1.6 + k * 0.125) % 1) * 0.1 + ly + 0.09
             c.O(lx - 0.08 + 0.01 * math.sin(k * 3), yy, 0.008, (255, 255, 250), 0)
     for k in range(3):
-        s = (t * 0.4 + k / 3) % 1
-        c.L([(0.36 + k * 0.06 + wob(s, 1, 0.02), 0.7 - s * 0.25), (0.36 + k * 0.06 + wob(s, 1, 0.02, 2), 0.64 - s * 0.25)], p["cream"], 5)
+        s_ = (t * 0.4 + k / 3) % 1
+        c.L([(0.3 + k * 0.06 + wob(s_, 1, 0.02), 0.72 - s_ * 0.2), (0.3 + k * 0.06 + wob(s_, 1, 0.02, 2), 0.66 - s_ * 0.2)], p["cream"], 5)
 
 def v_easel(c, t):
     p = c.p
@@ -217,19 +231,16 @@ def v_coconut_oil(c, t):
 
 def v_jasmine(c, t):
     p = c.p
-    sw = wob(t, 0.5, 0.015)
-    c.P([(0.12, 1.0), (0.2, 0.74), (0.8, 0.74), (0.88, 1.0)], p["yel"])          # shoulders, from behind
-    c.R(0.42, 0.6, 0.58, 0.78, SKIN, 3)                                           # neck
-    c.O(0.5, 0.46, 0.25, HAIR, 0)                                                 # back of head
-    c.O(0.5 + sw, 0.2, 0.13, HAIR, 0)                                             # bun
-    for k in range(12):                                                           # jasmine ring round the bun
-        a = 2 * math.pi * k / 12 + t * 0.15
-        c.O(0.5 + sw + 0.15 * math.cos(a), 0.2 + 0.1 * math.sin(a), 0.028, (255, 255, 252), 2)
-    for k in range(6):                                                            # string falling to the shoulder
-        c.O(0.66 + sw * 2 + 0.01 * k, 0.3 + k * 0.07, 0.024, (255, 255, 252), 2)
+    sw = wob(t, 0.5, 0.01)
+    c.S("girl_back", 0.5 + sw, 1.05, 1.0, top_frac=0.34)
+    for k in range(9):                                                              # jasmine string pinned on her loose hair
+        a = math.pi * (0.15 + 0.7 * k / 8)
+        c.O(0.5 + sw + 0.2 * math.cos(a), 0.3 - 0.06 * math.sin(a), 0.026, (255, 255, 252), 2)
+    for k in range(6):
+        c.O(0.69 + sw * 1.5 + 0.004 * k, 0.32 + k * 0.06, 0.022, (255, 255, 252), 2)
     for k in range(3):
         s_ = (t * 0.25 + k / 3) % 1
-        c.O(0.15 + k * 0.32 + wob(s_, 1, 0.05), 0.05 + s_ * 0.6, 0.013, (255, 255, 252), 2)
+        c.O(0.15 + k * 0.32 + wob(s_, 1, 0.05), 0.05 + s_ * 0.5, 0.013, (255, 255, 252), 2)
 
 def v_pookalam(c, t):
     p = c.p
@@ -316,15 +327,13 @@ def v_herbal_water(c, t):
 
 def v_swing(c, t):
     p = c.p
-    c.L([(0.05, 0.06), (0.95, 0.06)], p["out"], 10)
-    a = 0.35 * math.sin(t * 1.5)
-    px, py, L = 0.5, 0.06, 0.58
-    sx, sy = px + L * math.sin(a) * BH / BW, py + L * math.cos(a)
-    for o in (-0.12, 0.12):
-        c.L([(px + o, py), (sx + o, sy)], p["out"], 3)
-    c.R(sx - 0.2, sy, sx + 0.2, sy + 0.04, p["mid"])
-    body(c, sx, sy - 0.2, 0.18, 0.2, (244, 214, 90)); head(c, sx, sy - 0.25, 0.07, "bun")
-    c.R(sx - 0.07, sy - 0.12, sx + 0.07, sy - 0.07, p["white"], 3)
+    c.L([(0.05, 0.06), (0.95, 0.06)], (110, 64, 34), 10)
+    a = 0.3 * math.sin(t * 1.5)
+    px, py, L = 0.5, 0.06, 0.66
+    sx, sy = px + L * math.sin(a) * BH / BW * 0.5, py + L * math.cos(a)
+    for o in (-0.16, 0.16): c.L([(px + o, py), (sx + o, sy)], (110, 64, 34), 3)
+    c.S("girl_seat", sx, sy + 0.01, 0.36)
+    c.R(sx - 0.24, sy, sx + 0.24, sy + 0.04, (150, 100, 60))
 
 def v_ferry(c, t):
     p = c.p
@@ -353,44 +362,45 @@ def v_hospital(c, t):
 
 def v_cycle(c, t):
     p = c.p
+    cols = [((250, 236, 190), TERRA), ((246, 246, 240), (60, 110, 180)), ((240, 200, 150), TERRA)]
     for i in range(3):
-        x0 = 0.02 + i * 0.33
-        c.R(x0, 0.3, x0 + 0.3, 0.75, (p["white"], p["pale"], p["sky"])[i])
-        c.P([(x0, 0.3), (x0 + 0.3, 0.3), (x0 + 0.24, 0.2), (x0 + 0.2, 0.2), (x0 + 0.15, 0.1), (x0 + 0.1, 0.2), (x0 + 0.06, 0.2)], (p["deep"], p["mid"], p["deep"])[i])
-        c.R(x0 + 0.1, 0.5, x0 + 0.2, 0.75, p["navy"]); c.R(x0 + 0.04, 0.36, x0 + 0.11, 0.44, p["navy"], 2); c.R(x0 + 0.19, 0.36, x0 + 0.26, 0.44, p["navy"], 2)
-    c.R(0, 0.75, 1, 1, p["pale"], 0)
-    x = -0.3 + ((t * 0.22) % 1.6)
-    for wx in (x, x + 0.22):
-        c.O(wx, 0.86, 0.075, p["wash"], 4)
-        a = t * 8
-        c.L([(wx - 0.06 * math.cos(a), 0.86 - 0.05 * math.sin(a)), (wx + 0.06 * math.cos(a), 0.86 + 0.05 * math.sin(a))], p["out"], 2)
-    c.L([(x, 0.86), (x + 0.1, 0.76), (x + 0.22, 0.86)], p["out"], 4)
-    body(c, x + 0.1, 0.58, 0.14, 0.18, (244, 214, 90)); head(c, x + 0.11, 0.53, 0.055, "bun")
+        x0 = 0.02 + i * 0.33; wall_, roof_ = cols[i]
+        c.R(x0, 0.3, x0 + 0.3, 0.75, wall_)
+        c.P([(x0, 0.3), (x0 + 0.3, 0.3), (x0 + 0.24, 0.2), (x0 + 0.2, 0.2), (x0 + 0.15, 0.1), (x0 + 0.1, 0.2), (x0 + 0.06, 0.2)], roof_)
+        c.R(x0 + 0.1, 0.5, x0 + 0.2, 0.75, (110, 64, 34)); c.R(x0 + 0.04, 0.36, x0 + 0.11, 0.44, (60, 120, 70), 2); c.R(x0 + 0.19, 0.36, x0 + 0.26, 0.44, (60, 120, 70), 2)
+    c.R(0, 0.75, 1, 1, (200, 196, 186), 0)
+    x = -0.3 + ((t * 0.18) % 1.6)
+    c.S("girl_open", x + 0.02, 0.96, 0.62)                                          # walking her bicycle
+    for wx in (x + 0.08, x + 0.32):
+        c.d.ellipse((c.X(wx) - 0.075 * BW, c.Y(0.88) - 0.075 * BW, c.X(wx) + 0.075 * BW, c.Y(0.88) + 0.075 * BW), outline=(40, 40, 40), width=int(5 * K))
+        a = t * 6
+        c.L([(wx - 0.06 * math.cos(a), 0.88 - 0.05 * math.sin(a)), (wx + 0.06 * math.cos(a), 0.88 + 0.05 * math.sin(a))], p["out"], 2)
+    c.L([(x + 0.08, 0.88), (x + 0.18, 0.8), (x + 0.32, 0.88)], (60, 110, 180), 5); c.L([(x + 0.18, 0.8), (x + 0.3, 0.78)], (60, 110, 180), 5)
 
 def v_canoe(c, t):
     p = c.p
-    c.R(0, 0.5, 1, 1, p["sky"], 0)
+    c.R(0, 0.5, 1, 1, (120, 176, 226), 0)
     for x in (0.1, 0.85):
-        c.L([(x, 0.5), (x + 0.06, 0.12)], p["navy"], 6); c.L([(x, 0.52), (x + 0.06, 0.88)], p["mid"], 6)
-        for a in (-1, 1): c.P([(x + 0.06, 0.12), (x + 0.06 + a * 0.16, 0.18), (x + 0.06 + a * 0.07, 0.1)], p["deep"], 2)
-    x = -0.3 + ((t * 0.13) % 1.6)
-    c.P([(x, 0.6), (x + 0.4, 0.6), (x + 0.34, 0.66), (x + 0.06, 0.66)], p["navy"])
-    body(c, x + 0.26, 0.42, 0.1, 0.18, p["white"]); head(c, x + 0.26, 0.38, 0.045, "short")
-    c.L([(x + 0.36, 0.3), (x + 0.2, 0.72)], p["out"], 4)
-    for k in range(3): c.A(x - 0.05 - k * 0.08, 0.66, 0.04, 200, 340, p["white"], 2)
+        c.L([(x, 0.5), (x + 0.06, 0.12)], (110, 70, 40), 6); c.L([(x, 0.52), (x + 0.06, 0.88)], (90, 150, 200), 6)
+        for a in (-1, 1): c.P([(x + 0.06, 0.12), (x + 0.06 + a * 0.16, 0.18), (x + 0.06 + a * 0.07, 0.1)], GREEN, 2)
+    x = -0.3 + ((t * 0.12) % 1.6)
+    c.S("dad", x + 0.22, 0.63, 0.34)                                                # Dad poling the canoe
+    c.L([(x + 0.36, 0.26), (x + 0.16, 0.74)], (110, 64, 34), 4)
+    c.P([(x, 0.6), (x + 0.42, 0.6), (x + 0.36, 0.67), (x + 0.06, 0.67)], (110, 64, 34))
+    for k in range(3): c.A(x - 0.05 - k * 0.08, 0.67, 0.04, 200, 340, (240, 248, 255), 2)
 
 def v_school(c, t):
     p = c.p
-    c.R(0, 0.82, 1, 1, p["pale"], 0)
-    c.R(0.08, 0.36, 0.92, 0.82, p["white"]); c.P([(0.02, 0.38), (0.98, 0.38), (0.5, 0.14)], p["deep"])
-    for i in range(5): c.R(0.13 + i * 0.16, 0.48, 0.23 + i * 0.16, 0.6, p["sky"], 2)
-    c.R(0.42, 0.64, 0.58, 0.82, p["navy"])
-    ring = abs(math.sin(t * 3)) * 15
-    c.O(0.5, 0.26, 0.04, (244, 214, 90)); c.L([(0.5, 0.22), (0.5 + ring / 400, 0.3)], p["out"], 3)
-    for k in range(3):
-        x = 1.1 - ((t * 0.15 + k * 0.18) % 0.75)
-        body(c, x, 0.78, 0.06, 0.08, p["mid"]); head(c, x, 0.76, 0.025, "short", smile=False)
-        c.R(x + 0.02, 0.79, x + 0.05, 0.83, (244, 214, 90), 2)
+    c.R(0, 0.82, 1, 1, (200, 196, 186), 0)
+    c.O(0.08, 0.6, 0.12, GREEN); c.L([(0.08, 0.82), (0.08, 0.66)], (110, 64, 34), 6)
+    c.R(0.16, 0.36, 0.92, 0.82, (250, 236, 190)); c.P([(0.1, 0.38), (0.98, 0.38), (0.54, 0.14)], TERRA)
+    for i in range(4): c.R(0.21 + i * 0.18, 0.48, 0.31 + i * 0.18, 0.6, (90, 150, 200), 2)
+    c.R(0.46, 0.64, 0.62, 0.82, (110, 64, 34))
+    ring = math.sin(t * 6) * 0.03
+    c.O(0.54, 0.27, 0.04, GOLDC); c.L([(0.54, 0.23), (0.54 + ring, 0.31)], p["out"], 3)
+    for k in range(2):
+        r = 0.07 + ((t * 0.8 + k * 0.5) % 1) * 0.12
+        c.A(0.54, 0.27, r, 200, 340, (250, 250, 250), 2)
 
 def v_stars(c, t):
     p = c.p
@@ -467,21 +477,17 @@ def v_verandah(c, t):
     p = c.p
     c.R(0, 0.74, 1, 1, (176, 52, 40))                                                # red-oxide floor
     c.R(0.04, 0.0, 0.12, 0.74, (120, 72, 40))                                       # pillar
-    c.O(0.86, 0.68, 0.07, LAT); 
-    for j in range(5): c.E(0.86 + 0.06 * math.cos(j * 1.3 + wob(t, 0.4, 0.2)), 0.56 - 0.05 * abs(math.sin(j)), 0.05, 0.02, GREEN, 2)
-    c.L([(0.25, 0.85), (0.4, 0.55)], (110, 60, 30), 7); c.L([(0.7, 0.85), (0.55, 0.5)], (110, 60, 30), 7)
-    c.L([(0.35, 0.62), (0.8, 0.62)], (110, 60, 30), 7)                               # chair arms
-    c.P([(0.4, 0.55), (0.55, 0.5), (0.68, 0.78), (0.5, 0.82)], (234, 176, 64))       # cloth sling
-    for j in range(3): c.L([(0.43 + j * 0.05, 0.56 - j * 0.015), (0.54 + j * 0.05, 0.8 - j * 0.01)], (200, 80, 40), 3)
-    body(c, 0.55, 0.52, 0.16, 0.2, (246, 246, 240)); head(c, 0.5, 0.47, 0.06, "bun")
-    c.L([(0.6, 0.66), (0.82, 0.62)], SKIN, 10)                                       # legs up on the arms
-    c.R(0.5, 0.52, 0.64, 0.6, (250, 250, 250), 3)                                    # book
-    fl = (t * 0.5) % 1
-    if fl < 0.4: c.P([(0.57, 0.52), (0.57 + 0.07 * math.cos(fl * 7.8), 0.52 - 0.04 * math.sin(fl * 7.8)), (0.57 + 0.07 * math.cos(fl * 7.8), 0.6), (0.57, 0.6)], (255, 255, 255), 2)
-    c.R(0.2, 0.8, 0.28, 0.88, (236, 236, 236), 3)
+    c.O(0.88, 0.7, 0.07, LAT)
+    for j in range(5): c.E(0.88 + 0.06 * math.cos(j * 1.3 + wob(t, 0.4, 0.2)), 0.6 - 0.05 * abs(math.sin(j)), 0.05, 0.02, GREEN, 2)
+    c.L([(0.22, 0.9), (0.36, 0.5)], (110, 60, 30), 8); c.L([(0.76, 0.9), (0.62, 0.48)], (110, 60, 30), 8)
+    c.P([(0.3, 0.52), (0.66, 0.5), (0.72, 0.84), (0.28, 0.86)], (234, 176, 64))       # cloth sling
+    for j in range(4): c.L([(0.33 + j * 0.1, 0.52), (0.31 + j * 0.12, 0.85)], (200, 80, 40), 3)
+    c.S("girl_seat", 0.5, 0.86 + wob(t, 0.3, 0.004), 0.55)
+    c.L([(0.24, 0.62), (0.76, 0.6)], (110, 60, 30), 8)                                # chair arms
+    c.R(0.16, 0.86, 0.24, 0.94, (236, 236, 236), 3)
     for j in range(2):
         s_ = (t * 0.5 + j / 2) % 1
-        c.L([(0.23 + j * 0.03 + wob(s_, 1.4, 0.01), 0.78 - s_ * 0.15), (0.23 + j * 0.03, 0.74 - s_ * 0.15)], (250, 250, 250), 3)
+        c.L([(0.19 + j * 0.03 + wob(s_, 1.4, 0.01), 0.84 - s_ * 0.15), (0.19 + j * 0.03, 0.8 - s_ * 0.15)], (250, 250, 250), 3)
 
 def v_mango(c, t):
     p = c.p
@@ -638,16 +644,14 @@ def v_well(c, t):
 
 def v_friends(c, t):
     p = c.p
-    c.R(0, 0, 1, 0.5, (200, 226, 248), 0); c.R(0, 0.5, 1, 0.68, WATER, 0)
+    c.R(0, 0, 1, 0.5, (200, 226, 248), 0); c.R(0, 0.5, 1, 0.75, WATER, 0)
     for k in range(4): c.A(0.15 + k * 0.25, 0.58, 0.04, 200, 340, (240, 248, 255), 3)
-    c.R(0, 0.66, 1, 1, STONE)
-    for r in range(4):
-        for k in range(5): c.R(k * 0.22 - (r % 2) * 0.11, 0.66 + r * 0.085, k * 0.22 - (r % 2) * 0.11 + 0.22, 0.66 + (r + 1) * 0.085, STONE, 2)
-    for i, (x, hair, col) in enumerate(((0.35, "bun", (244, 200, 60)), (0.65, "long", (240, 240, 236)))):
-        bob = abs(math.sin(t * 3 + i)) * 0.015 if (t % 2.5) < 1.2 else 0
-        body(c, x, 0.48 - bob, 0.18, 0.2, col); head(c, x, 0.43 - bob, 0.06, hair)
-        sw = wob(t, 0.9, 0.04, i)
-        c.L([(x - 0.04, 0.68), (x - 0.05 + sw, 0.86)], SKIN, 8); c.L([(x + 0.04, 0.68), (x + 0.05 - sw, 0.86)], SKIN, 8)
+    for i, (x, name) in enumerate(((0.3, "girl_open"), (0.7, "friend"))):
+        bob = abs(math.sin(t * 3 + i)) * 0.012 if (t % 2.5) < 1.2 else 0
+        c.S(name, x, 0.78 - bob, 0.62, top_frac=0.45)
+    c.R(0, 0.74, 1, 1, STONE)
+    for r in range(3):
+        for k in range(5): c.R(k * 0.22 - (r % 2) * 0.11, 0.74 + r * 0.087, k * 0.22 - (r % 2) * 0.11 + 0.22, 0.74 + (r + 1) * 0.087, STONE, 2)
 
 def v_bus(c, t):
     p = c.p
@@ -669,11 +673,11 @@ def v_bus(c, t):
 
 def v_neighbours(c, t):
     p = c.p
-    body(c, 0.22, 0.42, 0.24, 0.4, (244, 200, 60)); head(c, 0.22, 0.37, 0.07, "bun")
-    body(c, 0.78, 0.42, 0.26, 0.4, (240, 240, 236)); head(c, 0.78, 0.37, 0.07, "short")
+    c.S("mum", 0.24, 0.78, 0.7, top_frac=0.42)
+    c.S("friend", 0.76, 0.78, 0.68, top_frac=0.45)
     k = 0.5 - 0.5 * math.cos(t * 1.2)
-    x = 0.3 + 0.4 * k; y = 0.45 - 0.16 * math.sin(math.pi * k)
-    c.L([(0.3, 0.5), (x - 0.04, y + 0.03)], SKIN, 8) if k < 0.55 else c.L([(0.7, 0.5), (x + 0.04, y + 0.03)], SKIN, 8)
+    x = 0.32 + 0.36 * k; y = 0.42 - 0.14 * math.sin(math.pi * k)
+    c.L([(0.3, 0.52), (x - 0.04, y + 0.03)], SKIN, 9) if k < 0.55 else c.L([(0.7, 0.52), (x + 0.04, y + 0.03)], SKIN, 9)
     c.R(x - 0.06, y - 0.08, x + 0.06, y + 0.06, STEEL); c.L([(x - 0.06, y - 0.03), (x + 0.06, y - 0.03)], p["out"], 2)
     c.A(x, y - 0.08, 0.04, 180, 360, p["out"], 3)
     c.R(0, 0.6, 1, 1, LAT)                                                           # low laterite wall
