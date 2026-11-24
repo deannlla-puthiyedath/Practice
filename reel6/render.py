@@ -263,6 +263,8 @@ def print_full():
         p = p.crop((0, 0, int(p.width * 810 / 1083), p.height))
         s = 1920 / p.height
         p = p.resize((int(p.width * s), 1920), Image.LANCZOS)
+        from PIL import ImageEnhance
+        p = ImageEnhance.Color(p).enhance(1.12).filter(ImageFilter.UnsharpMask(radius=2, percent=80, threshold=2))
         PRINT = p.crop(((p.width - W) // 2, 0, (p.width - W) // 2 + W, H)).convert("RGBA")
     return PRINT
 
