@@ -104,6 +104,8 @@ ARMS = {
     "knees":    ([(-60, 176), (-86, 290), (-160, 378)], [(60, 176), (86, 290), (160, 378)]),
     "crayon":   ([(-60, 176), (-82, 290), (-110, 392)], [(60, 176), (88, 290), (40, 396)]),
     "stitch":   ([(-60, 176), (-86, 286), (-32, 336)], [(60, 176), (86, 286), (30, 330)]),
+    "pay":      ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (98, 262), (176, 286)]),
+    "necklace_back": ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (74, 262)]),   # hand hidden in front
 }
 
 
@@ -126,45 +128,72 @@ def _fur(d, pts, r, seed=0):
         d.ellipse([q[0] - rr * 0.6, q[1] - rr * 1.1, q[0] + rr * 0.9, q[1] + rr * 0.2], fill=FUR_L)
 
 
+COAT_IN = (54, 50, 58)   # plain inside of the coat (no print)
+
+
+def _tex_stretch(fig, tex, poly):
+    """The whole painting squeezed into the shape (nothing cropped): used for the tie belt."""
+    xs = [q[0] for q in poly]; ys = [q[1] for q in poly]
+    x0, y0, x1, y1 = int(min(xs)), int(min(ys)), int(max(xs)) + 1, int(max(ys)) + 1
+    t = tex.resize((max(1, x1 - x0), max(1, y1 - y0)), Image.LANCZOS).convert("RGBA")
+    m = Image.new("L", t.size, 0)
+    ImageDraw.Draw(m).polygon([(a - x0, b - y0) for a, b in poly], fill=255)
+    fig.paste(t, (x0, y0), m)
+
+
+def _robe_side(sx):
+    return [(sx * 30, 164), (sx * 64, 168), (sx * 68, 186), (sx * 60, 210), (sx * 48, 262), (sx * 46, 292),
+            (sx * 80, 318), (sx * 150, 352), (sx * 210, 384), (sx * 226, 408), (sx * 120, 414), (0, 416)]
+
+
 def _coat_back(fig, f, coat, pose):
+    if coat != "slip":
+        return
     d = ImageDraw.Draw(fig)
-    hem_y = 420 if pose == "seat" else 700
-    hem_x = 250 if pose == "seat" else 120
-    if coat == "on":
-        d.polygon(f.pl([(-60, 162), (60, 162), (112, 290), (hem_x, hem_y), (-hem_x, hem_y), (-112, 290)]), fill=COAT, outline=LINE, width=f.w(2))
-    else:  # slipped to the elbows: the lining shows
-        d.polygon(f.pl([(-92, 268), (92, 268), (142, 320), (262, 420), (-262, 420), (-142, 320)]), fill=COAT, outline=LINE, width=f.w(2))
-        for sx in (-1, 1):
-            _tex(fig, JANAKI, f.pl([(sx * 90, 272), (sx * 72, 300), (sx * 112, 410), (sx * 250, 416), (sx * 140, 322)]))
-        d = ImageDraw.Draw(fig)
-        for sx in (-1, 1):
-            _fur(d, f.pl([(sx * 92, 268), (sx * 120, 300), (sx * 146, 330)]), f.w(12), seed=8 + sx)
+    # untied, slipped down behind her: only the plain inside edge shows
+    d.polygon(f.pl([(-98, 262), (98, 262), (150, 320), (240, 410), (-240, 410), (-150, 320)]), fill=COAT, outline=LINE, width=f.w(2))
+    d.polygon(f.pl([(-98, 262), (98, 262), (112, 282), (-112, 282)]), fill=COAT_IN)
+    for sx in (-1, 1):
+        _fur(d, f.pl([(sx * 96, 262), (sx * 120, 290), (sx * 140, 318)]), f.w(12), seed=8 + sx)
 
 
 def _coat_front(fig, f, pose):
+    """Straight wrap coat, tied like a bathrobe: fur shawl collar, the whole Colours of Janaki on the tie."""
     d = ImageDraw.Draw(fig)
-    hem_y = 420 if pose == "seat" else 700
-    hem_x = 250 if pose == "seat" else 120
-    for sx in (-1, 1):
-        panel = [(sx * 64, 166), (sx * 30, 168), (sx * 8, 292), (sx * 6, hem_y - 4), (sx * hem_x, hem_y), (sx * 112, 300), (sx * 70, 200)]
-        d.polygon(f.pl(panel), fill=COAT, outline=LINE, width=f.w(2))
-    _tex(fig, JANAKI, f.pl([(-6, 330), (-6, hem_y - 4), (-80, hem_y - 4)]))   # lining flash
+    robe = _robe_side(-1)[:-1] + [(0, 416)] + _robe_side(1)[::-1][1:]
+    d.polygon(f.pl(robe), fill=COAT, outline=LINE, width=f.w(2))
+    # V at the chest: the dress top shows
+    d.polygon(f.pl([(-24, 166), (24, 166), (0, 190)]), fill=SKIN)
+    _tex(fig, SPRING, f.pl([(-22, 186), (22, 186), (0, 252)]))
     d = ImageDraw.Draw(fig)
-    for sx in (-1, 1):
-        _fur(d, f.pl([(sx * 62, 164), (sx * 32, 170), (sx * 18, 230), (sx * 9, 286)]), f.w(12), seed=1 + sx)
-    _tex(fig, SUNBELT, f.pl([(-116, 278), (116, 278), (118, 300), (-118, 300)]))   # sun belt
+    d.line(f.pl([(6, 300), (18, 360), (34, 414)]), fill=(70, 66, 74), width=f.w(2))      # wrap edge below the tie
+    d.line(f.pl([(-40, 222), (-30, 262)]), fill=(52, 48, 56), width=f.w(1.5))           # soft fold
+    for sx in (-1, 1):                                                                   # fur shawl collar
+        _fur(d, f.pl([(sx * 62, 166), (sx * 30, 172), (sx * 12, 220), (-sx * 2, 268)]), f.w(11), seed=1 + sx)
+    belt = [(-50, 276), (50, 276), (50, 298), (-50, 298)]
+    _tex_stretch(fig, JANAKI, f.pl(belt))
+    for end in ([(-22, 292), (-10, 292), (-24, 364), (-38, 360)], [(-12, 292), (0, 294), (8, 374), (-6, 376)]):
+        _tex_stretch(fig, JANAKI.rotate(90, expand=True), f.pl(end))
     d = ImageDraw.Draw(fig)
-    d.polygon(f.pl([(-116, 278), (116, 278), (118, 300), (-118, 300)]), outline=LINE, width=f.w(1.5))
-    d.ellipse([*f.p(-11, 280), *f.p(11, 300)], fill=(240, 160, 40), outline=LINE, width=f.w(1.5))
-    for sx in (-1, 1):
-        d.line(f.pl([(sx * 4, 298), (sx * 16, 340)]), fill=(240, 160, 40), width=f.w(6))
+    d.polygon(f.pl(belt), outline=LINE, width=f.w(1.5))
+    d.ellipse([*f.p(-24, 279), *f.p(-4, 297)], outline=LINE, width=f.w(1.5))
+    kn = f.pl([(-24, 279), (-4, 297)])
+    _tex(fig, SUNBELT, [kn[0], (kn[1][0], kn[0][1]), kn[1], (kn[0][0], kn[1][1])])
+
+
+def _belt_loose(fig, f):
+    """Untied tie lying across her lap: the whole painting on it."""
+    pts = [(-200, 392), (-90, 386), (20, 398), (130, 390), (190, 400)]
+    poly = [(x, y - 7) for x, y in pts] + [(x, y + 7) for x, y in pts[::-1]]
+    _tex_stretch(fig, JANAKI, f.pl(poly))
+    ImageDraw.Draw(fig).polygon(f.pl(poly), outline=LINE, width=f.w(1.5))
 
 
 def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, earrings=True,
          pose="stand", arms="down", coat=None, wind=0.0):
     """Draw the girl onto RGBA `layer` (with sticker edge).
-    pose: stand | seat (cross-legged).  arms: down | necklace | knees | crayon | stitch.
-    coat: None | on | slip (black long coat, orange fur, Colours of Janaki lining, sun belt).  Returns the Fig mapping."""
+    pose: stand | seat (cross-legged).  arms: down | necklace | necklace_back | knees | crayon | stitch | pay.
+    coat: None | on | slip (straight black wrap coat, orange fur collar + cuffs, tie belt printed with the whole Colours of Janaki).  Returns the Fig mapping."""
     f = Fig(cx, top, height / 975)
     fig = Image.new("RGBA", layer.size, (0, 0, 0, 0)); d = ImageDraw.Draw(fig)
     _bob(d, f, back=(view == "back"), wind=wind)
@@ -180,16 +209,18 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
         d.line(f.pl([(sx * 17 - 9, 952), (sx * 17 + 9, 952)]), fill=LINE, width=f.w(3))
         d.line(f.pl([(sx * 17 + 6, 950), (sx * 17 + 10, 968)]), fill=LINE, width=f.w(3))
         d.line(f.pl([(sx * 17 - 8, 942), (sx * 17 + 9, 940)]), fill=GOLD, width=f.w(2))
-    # skirt (front and back are the same print)
+    # skirt (front and back are the same print); under the coat the linen lies flat, so it isn't drawn
     sk = f.pl(_skirt_poly() if pose == "stand" else _skirt_seat())
-    _tex(fig, SKIRT, sk)
+    if coat != "on":
+        _tex(fig, SKIRT, sk)
     d = ImageDraw.Draw(fig)
-    for x in (-150, -95, -45, 0, 45, 95, 150):  # panel seams
+    for x in ((-150, -95, -45, 0, 45, 95, 150) if coat != "on" else ()):  # panel seams
         if pose == "stand":
             d.line([f.p(x * 0.2, 292), f.p(x, 566 - 6 * abs(np.cos(x / 20)))], fill=(255, 255, 255, 70), width=f.w(1.5))
         else:
             d.line([f.p(x * 0.2, 292), f.p(x * 1.5, 404)], fill=(255, 255, 255, 70), width=f.w(1.5))
-    d.polygon(sk, outline=LINE, width=f.w(2.5))
+    if coat != "on":
+        d.polygon(sk, outline=LINE, width=f.w(2.5))
     # neck + shoulders (angular, like Reverie)
     d.polygon(f.pl([(-14, 112), (14, 112), (15, 160), (-15, 160)]), fill=SKIN, outline=LINE, width=f.w(2))
     torso = [(-15, 156), (-58, 166), (-66, 178), (-64, 196), (-46, 214), (-40, 292), (40, 292), (46, 214), (64, 196), (66, 178), (58, 166), (15, 156)]
@@ -246,17 +277,21 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
         d2.line(f.pl([(0, 4), (0, 60)]), fill=HAIR_HI, width=f.w(2))
     if coat == "on":
         _coat_front(fig, f, pose)
-        d = ImageDraw.Draw(fig)
+    elif coat == "slip":
+        _belt_loose(fig, f)
+    d = ImageDraw.Draw(fig)
     # arms (in front of the skirt edge)
     for sx, path in zip((-1, 1), ARMS[arms]):
         pts = [f.p(x, y) for x, y in path]
         if coat == "on":
-            _limb(d, pts, f.w(34), COAT, f)
+            _limb(d, pts, f.w(28), COAT, f)
         elif coat == "slip":
-            _limb(d, pts[:2], f.w(17), SKIN, f); _limb(d, pts[1:], f.w(34), COAT, f)
+            _limb(d, pts[:2], f.w(17), SKIN, f); _limb(d, pts[1:], f.w(28), COAT, f)
         else:
             _limb(d, pts, f.w(17), SKIN, f)
         h = pts[-1]
+        if len(pts) == 2:
+            continue
         if coat:
             _fur(d, [h, (h[0] + 1, h[1])], f.w(13), seed=3 + sx)
         r = f.w(9)

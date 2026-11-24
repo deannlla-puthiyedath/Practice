@@ -356,15 +356,14 @@ def room(state="meditate"):
         d.rounded_rectangle([h[0] - 8, h[1] - 60, h[0] + 12, h[1] + 10], 6, fill=(36, 84, 196))
         # the coat lies folded beside her, lining up
         d.polygon([(1480, 3380), (1800, 3400), (1840, 3580), (1460, 3580)], fill=BLACK)
-        tex_fill(lay, JANAKI, [(1510, 3410), (1780, 3425), (1810, 3550), (1490, 3550)])
         fur_chain(ImageDraw.Draw(lay), [(1480, 3380), (1800, 3400)], 22, 9)
+        G2._tex_stretch(lay, JANAKI, [(1450, 3470), (1850, 3476), (1852, 3506), (1448, 3500)])
     elif state == "stitch":
         f = G2.draw(lay, 1080, GT, GH, pose="seat", arms="stitch", eyes="open")
         d = ImageDraw.Draw(lay)
         lap = f.pl([(-150, 312), (150, 312), (196, 404), (-196, 404)])
         d.polygon(lap, fill=BLACK, outline=G2.LINE, width=3)
-        tex_fill(lay, JANAKI, f.pl([(-120, 322), (40, 322), (60, 396), (-150, 396)]))
-        tex_fill(lay, SUNBELT, f.pl([(60, 330), (150, 330), (160, 356), (66, 356)]))
+        G2._tex_stretch(lay, JANAKI, f.pl([(-180, 360), (180, 360), (184, 378), (-184, 378)]))
         fur_chain(ImageDraw.Draw(lay), f.pl([(-150, 312), (150, 312)]), 22, 7)
         d = ImageDraw.Draw(lay)
         for hx, hy in ((-32, 336), (30, 330)):
@@ -424,16 +423,27 @@ def boutique():
         x = 140 + k * 120
         d.line([x, 236, x, 270], fill=(80, 80, 80), width=4)
         d.polygon([(x - 50, 270), (x + 50, 270), (x + 60, 560), (x - 60, 560)], fill=c)
-    # dress form wearing the coat, open: Janaki lining + sun belt
+    # dress form wearing the wrap coat, closed: fur collar + the Janaki tie are the details
     mx, my = 760, 520
     d.line([mx, my + 900, mx, my + 1040], fill=(60, 50, 40), width=14); d.ellipse([mx - 90, my + 1020, mx + 90, my + 1060], fill=(60, 50, 40))
-    d.polygon([(mx - 150, my + 20), (mx + 150, my + 20), (mx + 240, my + 900), (mx - 240, my + 900)], fill=BLACK)
-    tex_fill(img, JANAKI, [(mx - 70, my + 60), (mx + 70, my + 60), (mx + 120, my + 880), (mx - 120, my + 880)])
-    tex_fill(img, SUNBELT, [(mx - 190, my + 330), (mx + 190, my + 330), (mx + 196, my + 384), (mx - 196, my + 384)])
-    d.ellipse([mx - 60, my - 70, mx + 60, my + 30], fill=(214, 200, 180))
-    fur_chain(d, [(mx - 150, my + 30), (mx - 70, my + 60), (mx - 60, my + 300)], 30, 1)
-    fur_chain(d, [(mx + 150, my + 30), (mx + 70, my + 60), (mx + 60, my + 300)], 30, 2)
-    fur_chain(d, [(mx - 240, my + 880), (mx - 236, my + 870)], 30, 3); fur_chain(d, [(mx + 240, my + 880), (mx + 236, my + 870)], 30, 4)
+    d.ellipse([mx - 40, my - 60, mx + 40, my + 10], fill=(214, 200, 180))
+    for sx in (-1, 1):  # sleeves hanging straight
+        d.polygon([(mx + sx * 128, my + 40), (mx + sx * 170, my + 70), (mx + sx * 178, my + 610), (mx + sx * 122, my + 610)], fill=BLACK, outline=G2.LINE)
+        fur_chain(d, [(mx + sx * 128, my + 612), (mx + sx * 176, my + 612)], 22, 5 + sx)
+    body = [(mx - 132, my + 40), (mx + 132, my + 40), (mx + 118, my + 200), (mx + 104, my + 330), (mx + 124, my + 520), (mx + 140, my + 880),
+            (mx - 140, my + 880), (mx - 124, my + 520), (mx - 104, my + 330), (mx - 118, my + 200)]
+    d.polygon(body, fill=BLACK, outline=G2.LINE, width=3)
+    d.polygon([(mx - 40, my + 30), (mx + 40, my + 30), (mx, my + 200)], fill=(214, 200, 180))
+    d.line([(mx + 14, my + 360), (mx + 40, my + 620), (mx + 60, my + 880)], fill=(70, 66, 74), width=3)
+    for sx in (-1, 1):
+        fur_chain(d, [(mx + sx * 128, my + 40), (mx + sx * 46, my + 34), (mx + sx * 20, my + 180), (mx - sx * 6, my + 320)], 24, 1 + sx)
+    G2._tex_stretch(img, JANAKI, [(mx - 110, my + 318), (mx + 110, my + 318), (mx + 112, my + 362), (mx - 112, my + 362)])
+    for end in ([(mx - 40, my + 350), (mx - 14, my + 350), (mx - 34, my + 520), (mx - 62, my + 514)],
+                [(mx - 20, my + 352), (mx + 4, my + 354), (mx + 18, my + 540), (mx - 8, my + 544)]):
+        G2._tex_stretch(img, JANAKI.rotate(90, expand=True), end)
+    d = ImageDraw.Draw(img)
+    d.rectangle([mx - 112, my + 318, mx + 112, my + 362], outline=G2.LINE, width=2)
+    d.ellipse([mx - 46, my + 322, mx - 6, my + 360], outline=G2.LINE, width=2)
     tag = r2.ransom("SOLD", (173, 51, 97), size=62, seed=41, max_w=400)
     img.paste(tag, (mx - tag.width // 2, my + 940), tag)
     d.line([mx, my + 900, mx, my + 950], fill=(120, 90, 60), width=3)
@@ -448,14 +458,53 @@ def mirror():
     d.ellipse([m[0] - 22, m[1] - 22, m[2] + 22, m[3] + 22], fill=(170, 130, 60))
     refl = Image.new("RGB", (FW, FH), (214, 230, 242)); rd = ImageDraw.Draw(refl)
     rd.rectangle([0, 1500, FW, FH], fill=(166, 122, 86))
-    rl = refl.convert("RGBA"); G2.draw(rl, 775, 400, 1290, arms="necklace", necklace="diamond", eyes="open"); refl = rl.convert("RGB")
+    rl = refl.convert("RGBA"); G2.draw(rl, 775, 400, 1290, arms="down", necklace="diamond", eyes="open"); refl = rl.convert("RGB")
     mk = Image.new("L", (FW, FH), 0); ImageDraw.Draw(mk).ellipse(m, fill=255)
     img.paste(refl, (0, 0), mk)
     shade(img, [(560, 300), (680, 300), (600, 1500), (560, 1400)], (255, 255, 255), 0.12)
     d = ImageDraw.Draw(img)
     d.line([620, 1640, 560, 1800], fill=(150, 110, 50), width=14); d.line([930, 1640, 990, 1800], fill=(150, 110, 50), width=14)
     # her, seen from behind, mid-turn: the back top is the plain blue water
-    lay = img.convert("RGBA"); G2.draw(lay, 300, 480, 1400, view="back"); return lay.convert("RGB")
+    lay = img.convert("RGBA"); G2.draw(lay, 300, 480, 1400, view="back", arms="down"); return lay.convert("RGB")
+
+
+def jeweller():
+    """She pays with the coat money; the jeweller hands over the diamond necklace."""
+    img = Image.new("RGB", (FW, FH), (60, 46, 58)); d = ImageDraw.Draw(img)
+    for k in range(5):  # warm shop lights
+        d.ellipse([90 + k * 220, 160, 150 + k * 220, 220], fill=(250, 214, 150))
+    d.rectangle([0, 300, FW, 1230], fill=(222, 206, 190))
+    for k in range(3):  # wall display cases
+        x = 90 + k * 320; d.rectangle([x, 380, x + 240, 640], fill=(70, 52, 64), outline=(196, 160, 80), width=6)
+        for j in range(3):
+            d.arc([x + 40 + j * 60, 450, x + 90 + j * 60, 540], 200, 340, fill=(236, 230, 214), width=4)
+    lay = img.convert("RGBA")
+    G2.draw(lay, 380, 520, 1500, arms="pay", eyes="open")
+    f = G2.Fig(380, 520, 1500 / 975)
+    d = ImageDraw.Draw(lay)
+    hx, hy = f.p(176, 290)
+    for k, c in enumerate([(206, 228, 196), (230, 214, 236), (206, 228, 196)]):  # folded notes
+        d.polygon([(hx - 10 + k * 8, hy - 40 - k * 10), (hx + 110 + k * 8, hy - 60 - k * 10), (hx + 118 + k * 8, hy - 8 - k * 10), (hx - 2 + k * 8, hy + 12 - k * 10)], fill=c, outline=(90, 110, 90))
+    # jeweller's arm from the right, holding the open box
+    d.polygon([(FW, 820), (820, 860), (812, 930), (FW, 930)], fill=(40, 70, 60))
+    d.ellipse([776, 848, 836, 920], fill=(196, 140, 110))
+    bx, by = 600, 760
+    d.rectangle([bx, by, bx + 220, by + 130], fill=(30, 40, 90), outline=(196, 160, 80), width=4)
+    d.polygon([(bx, by), (bx + 220, by), (bx + 200, by - 110), (bx + 20, by - 110)], fill=(36, 48, 104), outline=(196, 160, 80))
+    d.rectangle([bx + 16, by + 14, bx + 204, by + 116], fill=(236, 232, 240))
+    for i, t in enumerate(np.linspace(0.1, 0.9, 13)):
+        a = np.pi * t; x, y = bx + 110 - 70 * np.cos(a), by + 30 + 50 * np.sin(a)
+        d.ellipse([x - 7, y - 7, x + 7, y + 7], fill=(245, 248, 255), outline=(140, 170, 210))
+    d.polygon([(bx + 110, by + 82), (bx + 122, by + 98), (bx + 110, by + 116), (bx + 98, by + 98)], fill=(240, 248, 255), outline=(130, 160, 210))
+    for (sx, sy, r) in ((bx + 150, by + 50, 22), (bx + 60, by + 70, 14)):
+        d.line([sx - r, sy, sx + r, sy], fill=(255, 255, 255), width=4); d.line([sx, sy - r, sx, sy + r], fill=(255, 255, 255), width=4)
+    # glass counter in front (covers her lower half)
+    d.rectangle([0, 1230, FW, 1920], fill=(70, 52, 64))
+    d.rectangle([0, 1200, FW, 1240], fill=(196, 160, 80))
+    d.rectangle([60, 1290, 1020, 1600], fill=(150, 176, 196), outline=(196, 160, 80), width=6)
+    for k in range(4):
+        x = 140 + k * 230; d.arc([x, 1380, x + 120, 1480], 200, 340, fill=(236, 230, 214), width=5)
+    return lay.convert("RGB")
 
 
 def endcard():
@@ -481,6 +530,7 @@ COPY = {
     "05": "There's a child in there who never stopped playing.",
     "06": "Hand her your problems and a crayon.",
     "07": "She'll fix what your mind couldn't.",
+    "07b": "She'll fix what your mind couldn't.",
     "08": "There. I have just taught you how to meditate.",
 }
 
@@ -500,22 +550,23 @@ def main():
     w_off = room("coatoff")
     frames.append(("04b", "11-13 s  eyes open, coat slides off: the dress", crop_frame(w_off, gx, 2900, 1500)))
     frames.append(("05", "13-16 s  the child plays: crayon sketches", crop_frame(room("crayon"), gx, 2960, 1500)))
-    frames.append(("06", "16-19 s  she stitches the coat (Janaki lining, sun belt)", crop_frame(room("stitch"), gx, 2960, 1500)))
-    frames.append(("07", "19-23 s  boutique: the coat sells", boutique()))
-    frames.append(("08", "23-28 s  mirror: dress + diamond necklace, she turns", mirror()))
-    frames.append(("09", "28-30 s  end card", endcard()))
+    frames.append(("06", "16-19 s  she stitches the coat (the Janaki tie)", crop_frame(room("stitch"), gx, 2960, 1500)))
+    frames.append(("07", "19-22 s  boutique: the coat sells", boutique()))
+    frames.append(("07b", "22-25 s  jeweller: she pays, takes the necklace", jeweller()))
+    frames.append(("08", "25-29 s  mirror: she wears it with the dress, turns", mirror()))
+    frames.append(("09", "29-31 s  end card", endcard()))
 
     sheet_items = []
     for key, label, fr in frames:
         k = key[:2]
         if key in COPY:
-            fr = add_text(fr, COPY[key], seed=100 + int(k), y=470 if key not in ("07", "08") else 250, size=76 if key != "08" else 68)
+            fr = add_text(fr, COPY[key], seed=100 + int(k), y=470 if key not in ("07", "07b", "08") else 250, size=76 if key != "08" else 68)
         low = fr.resize(LOW, Image.LANCZOS)
         low.save(os.path.join(OUT, f"frame_{key}.jpg"), quality=86)
         sheet_items.append((key, label, low))
     # contact sheet, 5 x 2
     tw, th = 270, 480
-    cols = 5; rows = (len(sheet_items) + cols - 1) // cols
+    cols = 6; rows = (len(sheet_items) + cols - 1) // cols
     sheet = Image.new("RGB", (cols * (tw + 16) + 16, rows * (th + 70) + 16), (246, 242, 236)); sd = ImageDraw.Draw(sheet)
     for i, (key, label, low) in enumerate(sheet_items):
         x, y = 16 + (i % cols) * (tw + 16), 16 + (i // cols) * (th + 70)
