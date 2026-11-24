@@ -67,7 +67,7 @@ def _skirt_poly():
     return [(-37, 290)] + right + _wavy_hem(566, 182) + [(-x, y) for x, y in right[::-1]]
 
 
-def _bob(d, f, back=False):
+def _bob(d, f, back=False, wind=0.0):
     """Straight bob: dome on top, straight sides, ends just above the shoulders turning in."""
     def side(sx, back):
         pts = [(sx * 30, 2), (sx * 48, 14), (sx * 57, 36), (sx * 58, 70), (sx * 57, 108), (sx * 55, 126), (sx * 50, 138),
@@ -76,6 +76,7 @@ def _bob(d, f, back=False):
             pts = pts[:-4] + [(sx * 44, 146), (sx * 30, 151), (sx * 14, 153)]
         return pts
     out = [(0, -2)] + side(1, back) + side(-1, back)[::-1]
+    out = [(x + wind * 14 * max(0.0, (y - 60) / 90), y) for x, y in out]
     d.polygon(f.pl(out), fill=HAIR, outline=LINE, width=f.w(2))
 
 
@@ -91,23 +92,103 @@ def _hair_front(d, f):
         d.arc([*f.p(sx * 40 - 9, 128), *f.p(sx * 40 + 9, 148)], 20 if sx > 0 else 100, 160 if sx > 0 else 250, fill=HAIR_HI, width=f.w(2))
 
 
-def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, earrings=True):
-    """Draw the girl onto RGBA `layer` (with sticker edge). necklace: None | 'gold' | 'diamond'."""
+
+COAT = (24, 22, 26)
+FUR, FUR_L = (232, 122, 40), (250, 170, 86)
+JANAKI = Image.open(os.path.join(A, "janaki_full.jpg")).convert("RGB")   # coat lining: the whole painting
+SUNBELT = Image.open(os.path.join(A, "janaki_sun.jpg")).convert("RGB")   # belt: the sun
+
+ARMS = {
+    "down":     ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (66, 300), (70, 420)]),
+    "necklace": ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (80, 262), (20, 196)]),
+    "knees":    ([(-60, 176), (-86, 290), (-160, 378)], [(60, 176), (86, 290), (160, 378)]),
+    "crayon":   ([(-60, 176), (-82, 290), (-110, 392)], [(60, 176), (88, 290), (40, 396)]),
+    "stitch":   ([(-60, 176), (-86, 286), (-32, 336)], [(60, 176), (86, 286), (30, 330)]),
+}
+
+
+def _skirt_seat():
+    right = [(37, 290), (70, 318), (130, 350), (196, 378), (236, 398)]
+    xs = np.linspace(236, -236, 70)
+    hem = [(x, 410 + 7 * np.cos((x + 236) / 472 * 5 * 2 * np.pi)) for x in xs]
+    return [(-37, 290)] + right + hem + [(-x, y) for x, y in right[::-1]]
+
+
+def _fur(d, pts, r, seed=0):
+    rng = np.random.default_rng(seed)
+    pts = np.array(pts, float)
+    seg = np.concatenate([np.linspace(pts[i], pts[i + 1], 7, endpoint=False) for i in range(len(pts) - 1)] + [pts[-1:]])
+    for q in seg:
+        rr = r * rng.uniform(0.8, 1.15); j = rng.normal(0, r * 0.12, 2)
+        d.ellipse([q[0] + j[0] - rr, q[1] + j[1] - rr, q[0] + j[0] + rr, q[1] + j[1] + rr], fill=FUR)
+    for q in seg[::2]:
+        rr = r * 0.45
+        d.ellipse([q[0] - rr * 0.6, q[1] - rr * 1.1, q[0] + rr * 0.9, q[1] + rr * 0.2], fill=FUR_L)
+
+
+def _coat_back(fig, f, coat, pose):
+    d = ImageDraw.Draw(fig)
+    hem_y = 420 if pose == "seat" else 700
+    hem_x = 250 if pose == "seat" else 120
+    if coat == "on":
+        d.polygon(f.pl([(-60, 162), (60, 162), (112, 290), (hem_x, hem_y), (-hem_x, hem_y), (-112, 290)]), fill=COAT, outline=LINE, width=f.w(2))
+    else:  # slipped to the elbows: the lining shows
+        d.polygon(f.pl([(-92, 268), (92, 268), (142, 320), (262, 420), (-262, 420), (-142, 320)]), fill=COAT, outline=LINE, width=f.w(2))
+        for sx in (-1, 1):
+            _tex(fig, JANAKI, f.pl([(sx * 90, 272), (sx * 72, 300), (sx * 112, 410), (sx * 250, 416), (sx * 140, 322)]))
+        d = ImageDraw.Draw(fig)
+        for sx in (-1, 1):
+            _fur(d, f.pl([(sx * 92, 268), (sx * 120, 300), (sx * 146, 330)]), f.w(12), seed=8 + sx)
+
+
+def _coat_front(fig, f, pose):
+    d = ImageDraw.Draw(fig)
+    hem_y = 420 if pose == "seat" else 700
+    hem_x = 250 if pose == "seat" else 120
+    for sx in (-1, 1):
+        panel = [(sx * 64, 166), (sx * 30, 168), (sx * 8, 292), (sx * 6, hem_y - 4), (sx * hem_x, hem_y), (sx * 112, 300), (sx * 70, 200)]
+        d.polygon(f.pl(panel), fill=COAT, outline=LINE, width=f.w(2))
+    _tex(fig, JANAKI, f.pl([(-6, 330), (-6, hem_y - 4), (-80, hem_y - 4)]))   # lining flash
+    d = ImageDraw.Draw(fig)
+    for sx in (-1, 1):
+        _fur(d, f.pl([(sx * 62, 164), (sx * 32, 170), (sx * 18, 230), (sx * 9, 286)]), f.w(12), seed=1 + sx)
+    _tex(fig, SUNBELT, f.pl([(-116, 278), (116, 278), (118, 300), (-118, 300)]))   # sun belt
+    d = ImageDraw.Draw(fig)
+    d.polygon(f.pl([(-116, 278), (116, 278), (118, 300), (-118, 300)]), outline=LINE, width=f.w(1.5))
+    d.ellipse([*f.p(-11, 280), *f.p(11, 300)], fill=(240, 160, 40), outline=LINE, width=f.w(1.5))
+    for sx in (-1, 1):
+        d.line(f.pl([(sx * 4, 298), (sx * 16, 340)]), fill=(240, 160, 40), width=f.w(6))
+
+
+def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, earrings=True,
+         pose="stand", arms="down", coat=None, wind=0.0):
+    """Draw the girl onto RGBA `layer` (with sticker edge).
+    pose: stand | seat (cross-legged).  arms: down | necklace | knees | crayon | stitch.
+    coat: None | on | slip (black long coat, orange fur, Colours of Janaki lining, sun belt).  Returns the Fig mapping."""
     f = Fig(cx, top, height / 975)
     fig = Image.new("RGBA", layer.size, (0, 0, 0, 0)); d = ImageDraw.Draw(fig)
-    _bob(d, f, back=(view == "back"))
-    # legs + heels
-    for sx in (-1, 1):
+    _bob(d, f, back=(view == "back"), wind=wind)
+    if coat:
+        _coat_back(fig, f, coat, pose)
+        d = ImageDraw.Draw(fig)
+    if pose == "seat":
+        for sx in (-1, 1):  # crossed shins under the hem
+            _limb(d, [f.p(sx * 214, 398), f.p(-sx * 112, 430)], f.w(20), SKIN if sx < 0 else SKIN_SH, f)
+            d.polygon(f.pl([(-sx * 112, 422), (-sx * 136, 428), (-sx * 132, 440), (-sx * 108, 438)]), fill=LINE)
+    for sx in ((-1, 1) if pose == "stand" else ()):
         _limb(d, [f.p(sx * 20, 560), f.p(sx * 19, 760), f.p(sx * 17, 950)], f.w(20), SKIN if view == "front" else SKIN_SH, f)
         d.line(f.pl([(sx * 17 - 9, 952), (sx * 17 + 9, 952)]), fill=LINE, width=f.w(3))
         d.line(f.pl([(sx * 17 + 6, 950), (sx * 17 + 10, 968)]), fill=LINE, width=f.w(3))
         d.line(f.pl([(sx * 17 - 8, 942), (sx * 17 + 9, 940)]), fill=GOLD, width=f.w(2))
     # skirt (front and back are the same print)
-    sk = f.pl(_skirt_poly())
+    sk = f.pl(_skirt_poly() if pose == "stand" else _skirt_seat())
     _tex(fig, SKIRT, sk)
     d = ImageDraw.Draw(fig)
     for x in (-150, -95, -45, 0, 45, 95, 150):  # panel seams
-        d.line([f.p(x * 0.2, 292), f.p(x, 566 - 6 * abs(np.cos(x / 20)))], fill=(255, 255, 255, 70), width=f.w(1.5))
+        if pose == "stand":
+            d.line([f.p(x * 0.2, 292), f.p(x, 566 - 6 * abs(np.cos(x / 20)))], fill=(255, 255, 255, 70), width=f.w(1.5))
+        else:
+            d.line([f.p(x * 0.2, 292), f.p(x * 1.5, 404)], fill=(255, 255, 255, 70), width=f.w(1.5))
     d.polygon(sk, outline=LINE, width=f.w(2.5))
     # neck + shoulders (angular, like Reverie)
     d.polygon(f.pl([(-14, 112), (14, 112), (15, 160), (-15, 160)]), fill=SKIN, outline=LINE, width=f.w(2))
@@ -163,14 +244,32 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
         for sx in (-1, 1):
             d2.arc([*f.p(sx * 30 - 22, 112), *f.p(sx * 30 + 22, 150)], 30 if sx > 0 else 90, 150 if sx > 0 else 160, fill=HAIR_HI, width=f.w(3))
         d2.line(f.pl([(0, 4), (0, 60)]), fill=HAIR_HI, width=f.w(2))
+    if coat == "on":
+        _coat_front(fig, f, pose)
+        d = ImageDraw.Draw(fig)
     # arms (in front of the skirt edge)
-    for sx in (-1, 1):
-        _limb(d, [f.p(sx * 60, 176), f.p(sx * 66, 300), f.p(sx * 70, 420)], f.w(17), SKIN, f)
-        d.ellipse([*f.p(sx * 70 - 9, 414), *f.p(sx * 70 + 9, 440)], fill=SKIN, outline=LINE, width=f.w(1.5))
+    for sx, path in zip((-1, 1), ARMS[arms]):
+        pts = [f.p(x, y) for x, y in path]
+        if coat == "on":
+            _limb(d, pts, f.w(34), COAT, f)
+        elif coat == "slip":
+            _limb(d, pts[:2], f.w(17), SKIN, f); _limb(d, pts[1:], f.w(34), COAT, f)
+        else:
+            _limb(d, pts, f.w(17), SKIN, f)
+        h = pts[-1]
+        if coat:
+            _fur(d, [h, (h[0] + 1, h[1])], f.w(13), seed=3 + sx)
+        r = f.w(9)
+        d.ellipse([h[0] - r, h[1] - r, h[0] + r, h[1] + r + f.w(6)], fill=SKIN, outline=LINE, width=f.w(1.5))
     # sticker edge, like Reverie
     a = fig.split()[3]
     edge = a.filter(ImageFilter.MaxFilter(f.w(10) | 1))
     st = Image.new("RGBA", layer.size, STICKER + (0,)); st.putalpha(edge)
     sh = Image.new("RGBA", layer.size, (0, 0, 0, 0)); sh.putalpha(edge.filter(ImageFilter.GaussianBlur(6)).point(lambda v: v * 0.25))
     layer.alpha_composite(sh, (6, 8)); layer.alpha_composite(st); layer.alpha_composite(fig)
-    return layer
+    if wind:
+        d = ImageDraw.Draw(layer)
+        for k, y in enumerate((96, 120, 140)):
+            x0 = -np.sign(wind) * -60 if False else np.sign(wind) * 60
+            d.line(f.pl([(x0, y), (x0 + np.sign(wind) * (22 + 8 * k), y - 6), (x0 + np.sign(wind) * (40 + 10 * k), y + 2)]), fill=HAIR, width=f.w(2.5), joint="curve")
+    return f

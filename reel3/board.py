@@ -47,8 +47,9 @@ def janaki_standin(w=640, h=420, seed=3):
     return Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
 
 
-JANAKI = janaki_standin()
-SUNBELT = JANAKI.crop((int(640 * 0.62) - 150, int(420 * 0.58) - 60, int(640 * 0.62) + 150, int(420 * 0.58) + 60))
+import girl as G2  # the campaign girl, matched to Reverie
+JANAKI = G2.JANAKI      # Colours of Janaki: coat lining
+SUNBELT = G2.SUNBELT    # its sun: the belt
 
 # ---------------- palette ----------------
 SKIN, SKIN_D = (150, 98, 70), (124, 78, 54)
@@ -342,32 +343,36 @@ def room(state="meditate"):
         d = ImageDraw.Draw(img)
         for k, c in enumerate([(220, 40, 60), (36, 84, 196), (240, 170, 30), (40, 150, 80)]):
             d.rounded_rectangle([760 + k * 40, 3600, 784 + k * 40, 3690], 8, fill=c)
-    # the girl
-    g = G(*GIRL)
+    # the girl (seated, cross-legged)
+    GH, GT = 2040, 2420
+    lay = img.convert("RGBA")
     if state == "meditate":
-        seated(img, g, coat="on", eyes="closed", hands="knees", wind=-1.0)
+        G2.draw(lay, 1080, GT, GH, pose="seat", arms="knees", coat="on", eyes="closed", wind=-1.0)
     elif state == "coatoff":
-        seated(img, g, coat="slip", eyes="open", hands="knees", wind=-0.6)
+        G2.draw(lay, 1080, GT, GH, pose="seat", arms="knees", coat="slip", eyes="open", wind=-0.5)
     elif state == "crayon":
-        seated(img, g, coat="off", eyes="open", hands="crayon", wind=-0.4)
-        d = ImageDraw.Draw(img); h = g.P(70, -170)
-        d.rounded_rectangle([h[0] - 8, h[1] - 10, h[0] + 12, h[1] + 70], 6, fill=(36, 84, 196))
+        f = G2.draw(lay, 1080, GT, GH, pose="seat", arms="crayon", eyes="open")
+        d = ImageDraw.Draw(lay); h = f.p(40, 396)
+        d.rounded_rectangle([h[0] - 8, h[1] - 60, h[0] + 12, h[1] + 10], 6, fill=(36, 84, 196))
         # the coat lies folded beside her, lining up
-        d.polygon([(1460, 3360), (1760, 3380), (1800, 3560), (1440, 3560)], fill=BLACK)
-        tex_fill(img, JANAKI, [(1490, 3390), (1740, 3405), (1770, 3530), (1470, 3530)])
-        fur_chain(ImageDraw.Draw(img), [(1460, 3360), (1760, 3380)], 24, 9)
+        d.polygon([(1480, 3380), (1800, 3400), (1840, 3580), (1460, 3580)], fill=BLACK)
+        tex_fill(lay, JANAKI, [(1510, 3410), (1780, 3425), (1810, 3550), (1490, 3550)])
+        fur_chain(ImageDraw.Draw(lay), [(1480, 3380), (1800, 3400)], 22, 9)
     elif state == "stitch":
-        seated(img, g, coat="off", eyes="open", hands="stitch", wind=-0.4)
-        d = ImageDraw.Draw(img)
-        lap = [g.P(-230, -330), g.P(230, -330), g.P(300, -120), g.P(-300, -120)]
-        d.polygon(lap, fill=BLACK)
-        tex_fill(img, JANAKI, [g.P(-170, -310), g.P(60, -310), g.P(90, -150), g.P(-200, -150)])
-        tex_fill(img, SUNBELT, [g.P(80, -300), g.P(250, -300), g.P(260, -250), g.P(90, -250)])
-        fur_chain(d, [g.P(-230, -330), g.P(230, -330)], 26, 7)
-        for H_ in (g.P(-70, -250), g.P(60, -270)):
-            d.ellipse([H_[0] - 30, H_[1] - 26, H_[0] + 30, H_[1] + 30], fill=SKIN)
-        n0 = g.P(60, -290); d.line([n0, (n0[0] + 160, n0[1] - 300), (n0[0] + 220, n0[1] - 360)], fill=(232, 122, 40), width=4)
+        f = G2.draw(lay, 1080, GT, GH, pose="seat", arms="stitch", eyes="open")
+        d = ImageDraw.Draw(lay)
+        lap = f.pl([(-150, 312), (150, 312), (196, 404), (-196, 404)])
+        d.polygon(lap, fill=BLACK, outline=G2.LINE, width=3)
+        tex_fill(lay, JANAKI, f.pl([(-120, 322), (40, 322), (60, 396), (-150, 396)]))
+        tex_fill(lay, SUNBELT, f.pl([(60, 330), (150, 330), (160, 356), (66, 356)]))
+        fur_chain(ImageDraw.Draw(lay), f.pl([(-150, 312), (150, 312)]), 22, 7)
+        d = ImageDraw.Draw(lay)
+        for hx, hy in ((-32, 336), (30, 330)):
+            q = f.p(hx, hy); d.ellipse([q[0] - 19, q[1] - 19, q[0] + 19, q[1] + 31], fill=G2.SKIN, outline=G2.LINE, width=3)
+        n0 = f.p(30, 326)
+        d.line([n0, (n0[0] + 160, n0[1] - 300), (n0[0] + 220, n0[1] - 360)], fill=(232, 122, 40), width=4)
         d.line([n0, (n0[0] + 14, n0[1] - 60)], fill=(200, 205, 215), width=6)
+    img = lay.convert("RGB")
     # cotton fluff in the fan's wind: snow up close
     if state in ("meditate", "coatoff"):
         lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); ld = ImageDraw.Draw(lay)
@@ -432,8 +437,7 @@ def boutique():
     tag = r2.ransom("SOLD", (173, 51, 97), size=62, seed=41, max_w=400)
     img.paste(tag, (mx - tag.width // 2, my + 940), tag)
     d.line([mx, my + 900, mx, my + 950], fill=(120, 90, 60), width=3)
-    standing(img, G(300, 1760, 0.72), view="front", arm="down", necklace=False)
-    return img
+    lay = img.convert("RGBA"); G2.draw(lay, 300, 610, 1150, view="front", eyes="open"); return lay.convert("RGB")
 
 
 def mirror():
@@ -444,15 +448,14 @@ def mirror():
     d.ellipse([m[0] - 22, m[1] - 22, m[2] + 22, m[3] + 22], fill=(170, 130, 60))
     refl = Image.new("RGB", (FW, FH), (214, 230, 242)); rd = ImageDraw.Draw(refl)
     rd.rectangle([0, 1500, FW, FH], fill=(166, 122, 86))
-    standing(refl, G(775, 1700, 0.82), view="front", arm="necklace", necklace=True)
+    rl = refl.convert("RGBA"); G2.draw(rl, 775, 400, 1290, arms="necklace", necklace="diamond", eyes="open"); refl = rl.convert("RGB")
     mk = Image.new("L", (FW, FH), 0); ImageDraw.Draw(mk).ellipse(m, fill=255)
     img.paste(refl, (0, 0), mk)
     shade(img, [(560, 300), (680, 300), (600, 1500), (560, 1400)], (255, 255, 255), 0.12)
     d = ImageDraw.Draw(img)
     d.line([620, 1640, 560, 1800], fill=(150, 110, 50), width=14); d.line([930, 1640, 990, 1800], fill=(150, 110, 50), width=14)
     # her, seen from behind, mid-turn: the back top is the plain blue water
-    standing(img, G(300, 1900, 0.82), view="back", arm="down", necklace=False)
-    return img
+    lay = img.convert("RGBA"); G2.draw(lay, 300, 480, 1400, view="back"); return lay.convert("RGB")
 
 
 def endcard():
