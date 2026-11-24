@@ -42,3 +42,37 @@ She thinks she is poor because she has no income. She stops long enough to see s
 - Words are no longer exact book lines only: her own worry lines and one swapped word are added.
 - Voiceover is someone else's voice, not Della's.
 - Length goes from 32 s to about 45 s.
+
+## v3 changes (Della, after v2)
+- The boxes do not pop onto the screen. The camera travels into the dress pattern and through the boxes one after another. Inside each box, the painted texture turns into a small cut-paper scene in that box's own colours (sun boxes: home and warmth; sea boxes: time and freedom). The last box is the sun, and the camera goes through it into the painting.
+- Pace: first 10 boxes about 0.8 s each, the next 10 to 15 about 0.35 s each.
+- Realization (her voice): "I don't have the money. / I have what it buys." then "I'm not behind. / I'm already where they're going."
+- The unset alarm clock is dropped; slow mornings take its place.
+- Voice: AI voice allowed if Della chooses it; then the post gets Instagram's AI label and the caption says the voice is AI.
+
+### Box list (first 10 carry the meaning)
+1. Mum's hand serving rice onto her plate
+2. Dad laughing on the verandah with the newspaper
+3. The house her parents built (no rent)
+4. Her own room, her bed, her window
+5. Hot food any time (rice, fish curry, a steel plate)
+6. A slow morning: sun on her pillow, she wakes when she wakes
+7. Her paints and an easel
+8. A good hospital nearby / Mum's medicine box
+9. The sea, an evening walk away
+10. Mum pulling a blanket over her during a nap (being looked after)
+11. Bare feet on a cool floor, no commute
+12. Four o'clock tea and banana fritters with her parents
+13. Monsoon rain on the tiled roof
+14. Fresh fish from the Chinese nets
+15. Coconut palm, mango tree, jasmine in the garden
+16. Water from the well
+17. A swing (oonjal) and a book
+18. A week planner with nothing she dreads
+19. Her scooter: go anywhere, any day
+20. Neighbours talking over the wall
+21. The evening lamp being lit
+22. A flower carpet for a festival
+23. An afternoon nap
+24. A class she chose to learn
+25. The sun (the camera goes through it into the painting)
