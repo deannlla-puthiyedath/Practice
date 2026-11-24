@@ -1,35 +1,44 @@
-# Reel 6: Nope. You are still not here. (DRAFT for approval, her day still to be chosen)
+# Reel 6: Nope. You are still not here. (DRAFT v2 for approval)
 
-Campaign: "A day in the dress". Cut-paper, 1080x1920, about 32 s, violin only (dreamy film score, no plucked notes, no five-note scales), no voice until Della records hers last.
-Painting: Sunset (2): Finding Meaning in the Now. It appears only at the reveal, with no words about it.
+A conversation inside her head. Her worried voice, and her inner voice: calm, familiar, all-knowing, never preachy.
+The inner voice speaks only from one passage of the book (Ch 6, "Let's turn back ... Alright now, for real, come back ... Nope. You are still not here ... So take a deep breath").
+Her worries are Della's own words. One book word is swapped ("word" becomes "bell") so the voice can point at a real sound.
 
-## Decided
-- Hook (first 3 s): "Nope. You are still not here." (scored 87 STRONG; all other candidates under 50)
-- Length: about 32 s
-- Music: dreamy film score, one long held violin note at the breath
+Labels: **BOOK** = exact. **BOOK, 1 word changed** = Della approved adapting to the scene. **HER** = Della's own words, not from the book.
 
-## Not decided yet
-- Her day in the dress (Della will say). The words below work with any of the three options.
+## The idea in one line
+She thinks she is poor because she has no income. She stops long enough to see she is wealthy: home, parents, food, time, freedom. What people work 30 years and retire for, she already has. The worry was never wrong, it just had the wrong answer.
 
-## The dress (new template for this reel: use as photographed, in linen)
-- Fitted racerback tank dress, scoop neck, wide straps, above the knee. No skirt flare, so movement comes from walking, shadow and the lift in the courtyard.
-- Print: the painting turned on its side. Left half sun yellows and oranges with the sun swirl at the left, right half blues, white tape grid between the boxes.
-- Material: rough linen. Visible weave and slubs, matte, colours a touch softer than the photo, no sheen.
-- Back view (she walks into the house from behind) shows the racerback cut.
-- Caption must say it is a design sketch.
+## Script (about 45 s)
 
-## Words (draft, 7 tiles of the 32 s)
-| Time | Tile (book, exact) |
-|---|---|
-| 0 to 3 | Nope. You are still not here. |
-| 3 to 5.5 | Think Now. |
-| 5.5 to 8 | Dream after. |
-| 8 to 11 | So take a deep breath. |
-| 11 to 14 | Like you’re not afraid to feel. |
-| 14 to 17 | There is no hurry. |
-| 17 to 20.5 | We will arrive when we arrive. |
-| 20.5 to 23.6 | (no words: the courtyard, parents) |
-| 23.6 to 28.4 | Reveal: the painting (no words) |
-| 28.4 to 32 | End card: rose logo, Della Antony, Wear art, not a logo. |
+| Sec | Picture | Who | Words |
+|---|---|---|---|
+| 0-3 | Fort Kochi street, late afternoon. She walks fast, eyes down. A paper thought-cloud stuffed with tiles hangs over her bun. | HER | I don't have a job. I live with my parents. |
+| 3-5.5 | The cloud swells, more tiles crowd in. | HER | What am I doing with my life? |
+| 5.5-8 | | HER | Everyone is ahead of me. |
+| 8-10.5 | A church spire ahead. She stops at the kerb. | INNER, BOOK | Alright now, for real, come back. |
+| 10.5-13 | She tries: closes her eyes tight, fists clenched. | HER | Maybe I just need more discipline. |
+| 13-15.5 | The cloud wobbles back. | INNER, BOOK | Nope. You are still not here. |
+| 15.5-18 | The church bell swings. One clear ring. Sound rings out in paper circles. | INNER, BOOK 1 word changed | Focus. on. this. bell. |
+| 18-21 | Her shoulders drop. Sea wind moves the palms. | INNER, BOOK | So take a deep breath. |
+| 21-24 | | INNER, BOOK | Like you're not afraid to feel. |
+| 24-29 | **The stop.** No voice. The violin fades out. Only the bell's hum, wind, sea, faint street voices. She catches her reflection in a shop window and sees the dress, really sees it: the sun boxes, the sea boxes. Slow zoom into the pattern. The cloud has gone quiet and small, not gone. | (none) | (none) |
+| 29-35 | She walks home. Courtyard: Mum setting down food, Dad laughing, her paints on the verandah, the open sky. The boxes from the dress open one by one around her, each holding one of these: the meal, Mum, Dad, the house, her paints, the sea, an unset alarm clock. | (none) | (none) |
+| 35-39 | She sits between her parents. | HER (the realization) | I don't have the cash. / I have what it buys. |
+| 39-42 | Push into the dress's sun box, then the painting (no words). | INNER, BOOK | This will get easier as it becomes more meaningful. |
+| 42-45 | End card: rose logo, Della Antony, Wear art, not a logo. | | |
 
-Swap any tile from QUOTES.md. Same fixed cast, heritage house and courtyard as Reels 4 and 5.
+## The realization line (pick one)
+1. **I don't have the cash. / I have what it buys.** (recommended: says exactly "not cash flow, but wealth")
+2. I already have what people retire for.
+3. I'm not behind. / I'm already where they're going.
+
+## Sound
+- Violin film score under the worries and the voice, a held note on "breath", then silence for the stop.
+- The stop uses real sound. Best: Della records 30 s on her phone in Fort Kochi (a church bell, sea wind, street voices). Wind and a bell can be made in code if not.
+- Voices: the inner voice is another person (not Della, not AI). Her worries: a second voice, or on-screen tiles only.
+
+## Changes from the campaign rules (Della's call)
+- Words are no longer exact book lines only: her own worry lines and one swapped word are added.
+- Voiceover is someone else's voice, not Della's.
+- Length goes from 32 s to about 45 s.
