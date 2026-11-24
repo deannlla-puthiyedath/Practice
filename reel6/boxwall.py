@@ -134,7 +134,9 @@ def v_mum_drive(c, t):
     c.S("girl_open", 0.72, 0.98 - bob, 0.78, top_frac=0.34)
     c.P([(0, 0), (1, 0), (1, 0.1), (0, 0.1)], p["org"]); c.P([(0, 0.66), (1, 0.66), (1, 1), (0, 1)], p["org"])
     c.R(0, 0.1, 0.05, 0.66, p["org"]); c.R(0.95, 0.1, 1, 0.66, p["org"])
-    c.A(0.24, 0.82, 0.16, 200, 340, (60, 50, 50), 10)   # steering wheel
+    c.O(0.26, 0.8, 0.15, None, 0); c.A(0.26, 0.8, 0.15, 0, 360, (60, 50, 50), 12)   # full steering wheel
+    for a in (90, 210, 330): c.L([(0.26, 0.8), (0.26 + 0.15 * math.cos(math.radians(a + t * 20)), 0.8 + 0.15 * math.sin(math.radians(a + t * 20)) * BW / BH)], (60, 50, 50), 8)
+    c.O(0.26, 0.8, 0.03, (60, 50, 50), 0)
 
 def v_dad_serve(c, t):
     p = c.p
@@ -714,19 +716,279 @@ def v_fishing_net(c, t):
         c.L([(x0, y0), (tx + (x0 - tx) * 0.5, y0 + sag + 0.06 * math.sin(math.pi * f))], (250, 250, 250), 2)
     c.A(tx - 0.02, ends[0][1] + 0.02, span * 0.95, 15, 165, (250, 250, 250), 3)
 
+# ================================================================== round 3 boxes
+from PIL import ImageFont
+_PLATES = {}
+def PLATE(name):
+    if name not in _PLATES: _PLATES[name] = Image.open(os.path.join(HERE, "plates", name + ".png")).convert("RGBA")
+    return _PLATES[name]
+_FONTS = {}
+def FONT(px):
+    if px not in _FONTS:
+        for f in ("Inter-Light.otf", "Inter-ExtraLight.otf", "Inter-Regular.otf"):
+            pth = os.path.join("/usr/share/fonts/opentype/inter", f)
+            if os.path.exists(pth): _FONTS[px] = ImageFont.truetype(pth, px); break
+    return _FONTS[px]
+
+def v_alarm_off(c, t):
+    p = c.p
+    c.R(0.12, 0.04, 0.88, 0.98, (40, 40, 44), 4, r=40)
+    c.R(0.15, 0.06, 0.85, 0.96, (250, 250, 250), 0, r=32)
+    c.R(0.4, 0.075, 0.6, 0.105, (40, 40, 44), 0, r=10)
+    times = ["6:00", "6:30", "7:00", "7:15"]
+    for i, tm in enumerate(times):
+        y = 0.2 + i * 0.19
+        k = ease((t - 0.5 - i * 0.55) / 0.35)
+        ink = tuple(int(a + (b - a) * k) for a, b in zip((20, 20, 24), (176, 176, 180)))
+        c.d.text((c.X(0.2), c.Y(y)), tm, font=FONT(int(0.15 * BW)), fill=ink)
+        col = tuple(int(a + (b - a) * k) for a, b in zip((76, 200, 100), (220, 220, 224)))
+        c.R(0.62, y + 0.025, 0.8, y + 0.085, col, 0, r=30)
+        kx = 0.765 - 0.11 * k
+        c.O(kx, y + 0.055, 0.04, (255, 255, 255), 2)
+        c.L([(0.2, y + 0.135), (0.8, y + 0.135)], (226, 226, 230), 2)
+
+def v_bed_swing(c, t):
+    p = c.p
+    c.R(0, 0, 1, 0.06, (110, 64, 34))
+    a = 0.06 * math.sin(t * 1.2)
+    sx = 0.5 + a; sy = 0.66
+    for o in (-0.36, 0.36): c.L([(0.5 + o, 0.06), (sx + o, sy)], (120, 110, 100), 4)
+    c.R(sx - 0.4, sy - 0.02, sx + 0.4, sy + 0.06, (130, 80, 40))              # the bed swing (oonjal kattil)
+    c.R(sx - 0.38, sy - 0.06, sx + 0.38, sy - 0.01, (240, 220, 170), 3)        # mattress
+    c.E(sx - 0.3, sy - 0.08, 0.08, 0.03, (234, 120, 60))                       # cushion
+    im = SPRITE("girl_open").rotate(90, expand=True, resample=Image.BICUBIC)   # lying on her side, head on the cushion
+    sc = 0.86 * BW / im.width
+    im = im.resize((int(im.width * sc), int(im.height * sc)), Image.LANCZOS)
+    c.img.alpha_composite(im, (int(c.X(sx + 0.02) - im.width / 2), int(c.Y(sy - 0.03) - im.height)))
+    fl = (t * 0.4) % 1
+    bx_, by_ = sx - 0.14, sy - 0.13                                              # small open book in her hands
+    c.P([(bx_ - 0.06, by_ - 0.02), (bx_, by_ - 0.04), (bx_, by_ + 0.02), (bx_ - 0.06, by_ + 0.03)], (255, 255, 255), 2)
+    c.P([(bx_, by_ - 0.04), (bx_ + 0.06, by_ - 0.02), (bx_ + 0.06, by_ + 0.03), (bx_, by_ + 0.02)], (250, 246, 236), 2)
+    if fl < 0.25: c.P([(bx_, by_ - 0.04), (bx_ + 0.06 - 0.12 * fl * 4, by_ - 0.03), (bx_ + 0.06 - 0.12 * fl * 4, by_ + 0.025), (bx_, by_ + 0.02)], (255, 255, 255), 2)
+
+def v_house(c, t):
+    views = [("house", (0, 120, 1080, 1520)), ("courtyard", (0, 80, 1080, 1480)), ("street", (0, 200, 1080, 1600))]
+    per = 1.7
+    i = int(t // per) % len(views); k = ease(((t % per) - (per - 0.35)) / 0.35)
+    def view(j, tt):
+        name, box = views[j]
+        z = 1.0 + 0.05 * ((tt % per) / per)
+        x0, y0, x1, y1 = box; w_, h_ = (x1 - x0) / z, (y1 - y0) / z
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        return PLATE(name).crop((int(cx - w_ / 2), int(cy - h_ / 2), int(cx + w_ / 2), int(cy + h_ / 2))).resize((BW, BH), Image.LANCZOS)
+    a = view(i, t)
+    if k > 0: a = Image.blend(a, view((i + 1) % len(views), 0.0), k)
+    c.img.alpha_composite(a)
+    if views[i][0] == "courtyard":
+        for j in range(2):
+            bx = 0.2 + 0.6 * ((t * 0.3 + j * 0.5) % 1); by = 0.3 + 0.05 * math.sin(t * 4 + j)
+            c.E(bx, by, 0.03, 0.015 + 0.012 * abs(math.sin(t * 9 + j)), (244, 200, 60), 2)
+
+def v_three_faiths(c, t):
+    p = c.p
+    c.R(0, 0.82, 1, 1, (176, 92, 62))
+    c.R(0.02, 0.48, 0.24, 0.82, (250, 248, 240)); c.P([(0.02, 0.48), (0.24, 0.48), (0.13, 0.26)], TERRA)          # church
+    c.L([(0.13, 0.26), (0.13, 0.14)], p["out"], 4); c.L([(0.09, 0.18), (0.17, 0.18)], p["out"], 4); c.R(0.09, 0.66, 0.17, 0.82, (110, 64, 34))
+    c.R(0.26, 0.52, 0.5, 0.82, (250, 248, 240)); c.PIE(0.38, 0.52, 0.1, 180, 360, (90, 160, 110))                     # mosque
+    c.R(0.46, 0.28, 0.5, 0.82, (250, 248, 240)); c.PIE(0.48, 0.28, 0.025, 180, 360, (90, 160, 110)); c.A(0.38, 0.4, 0.025, 60, 300, p["out"], 4)
+    c.R(0.52, 0.52, 0.74, 0.82, (250, 236, 200)); c.P([(0.5, 0.54), (0.76, 0.54), (0.7, 0.44), (0.56, 0.44)], TERRA)  # temple
+    c.P([(0.54, 0.45), (0.72, 0.45), (0.67, 0.36), (0.59, 0.36)], TERRA); c.L([(0.75, 0.82), (0.75, 0.24)], GOLDC, 5)
+    c.R(0.78, 0.5, 0.98, 0.82, (246, 246, 250)); c.R(0.83, 0.32, 0.93, 0.5, (246, 246, 250))                          # synagogue + clock tower
+    c.P([(0.82, 0.32), (0.94, 0.32), (0.88, 0.25)], (70, 120, 190)); c.O(0.88, 0.4, 0.03, (255, 255, 255), 3)
+    sx, sy, r = 0.88, 0.6, 0.035
+    c.P([(sx, sy - r), (sx + r * 0.87, sy + r * 0.5), (sx - r * 0.87, sy + r * 0.5)], None, 3)
+    c.P([(sx, sy + r), (sx + r * 0.87, sy - r * 0.5), (sx - r * 0.87, sy - r * 0.5)], None, 3)
+    for x in (0.13, 0.38, 0.63, 0.88):
+        f = 0.6 + 0.4 * abs(math.sin(t * 5 + x * 9))
+        c.O(x, 0.77, 0.016 * f + 0.006, (250, 200, 60), 0)
+    for k in range(3):
+        bx = ((t * 0.12 + k * 0.3) % 1.2) - 0.1
+        c.L([(bx, 0.1 + k * 0.04), (bx + 0.025, 0.12 + k * 0.04), (bx + 0.05, 0.1 + k * 0.04)], p["out"], 3)
+
+def v_pookalam(c, t):
+    p = c.p
+    c.R(0, 0, 1, 1, (176, 52, 40), 0)                                               # red-oxide floor
+    rings = [(244, 200, 30), (234, 110, 30), (255, 255, 250), (200, 40, 50), (120, 170, 60), (246, 220, 80), (150, 60, 140)]
+    k = t / 3.5
+    cx, cy = 0.5, 0.48
+    for i in range(len(rings) - 1, -1, -1):
+        if i / len(rings) > k: continue
+        r = 0.08 + i * 0.055
+        c.O(cx, cy, r, rings[i], 0)
+        for j in range(int(18 + i * 6)):                                              # petal texture
+            a = j * 2 * math.pi / (18 + i * 6) + i
+            c.O(cx + (r - 0.025) * math.cos(a), cy + (r - 0.025) * math.sin(a) * BW / BH, 0.008, tuple(max(0, v - 30) for v in rings[i]), 0)
+    if k > 0.5:
+        for j in range(8):                                                           # star pattern on top
+            a = j * math.pi / 4
+            c.P([(cx, cy), (cx + 0.18 * math.cos(a - 0.15), cy + 0.18 * math.sin(a - 0.15) * BW / BH), (cx + 0.3 * math.cos(a), cy + 0.3 * math.sin(a) * BW / BH),
+                 (cx + 0.18 * math.cos(a + 0.15), cy + 0.18 * math.sin(a + 0.15) * BW / BH)], (255, 255, 250) if j % 2 else (244, 200, 30), 0)
+    c.O(cx, cy, 0.05, (200, 40, 50), 0)
+    c.R(0.78, 0.82, 0.92, 0.86, GOLDC, 3); c.L([(0.85, 0.82), (0.85, 0.7)], GOLDC, 8); c.E(0.85, 0.69, 0.06, 0.015, GOLDC, 3)  # nilavilakku
+    fl = 0.012 * math.sin(t * 9)
+    c.P([(0.83, 0.68), (0.87, 0.68), (0.85 + fl, 0.62)], (250, 180, 40), 0)
+    s_ = (t * 0.6) % 1
+    c.O(0.15 + 0.1 * s_, 0.05 + 0.4 * s_, 0.015, (234, 110, 30), 0)
+
+def v_elephant(c, t):
+    p = c.p
+    c.R(0, 0.84, 1, 1, (200, 170, 120), 0)
+    c.E(0.52, 0.56, 0.3, 0.18, (120, 116, 120))                                      # body
+    for x in (0.3, 0.42, 0.62, 0.74): c.R(x - 0.05, 0.62, x + 0.05, 0.88, (110, 106, 110))
+    c.R(0.34, 0.42, 0.74, 0.66, (196, 40, 44), 3)                                     # red cloth
+    for j in range(8): c.O(0.37 + j * 0.05, 0.66, 0.018, GOLDC, 2)
+    c.O(0.22, 0.42, 0.13, (126, 122, 126))                                            # head
+    flap = 0.03 * math.sin(t * 2.2)
+    c.E(0.3 + flap, 0.46, 0.08, 0.12, (110, 106, 110))                                # ear
+    sw = 0.06 * math.sin(t * 1.5)
+    c.L([(0.12, 0.48), (0.08 + sw * 0.5, 0.64), (0.1 + sw, 0.8)], (126, 122, 126), 26)   # trunk
+    c.L([(0.13, 0.52), (0.06, 0.56)], (250, 250, 240), 6)                              # tusk
+    c.P([(0.12, 0.28), (0.3, 0.28), (0.28, 0.5), (0.21, 0.58), (0.14, 0.5)], GOLDC)     # nettipattam
+    for i in range(3):
+        for j in range(3): c.O(0.16 + j * 0.05, 0.33 + i * 0.06, 0.014, (250, 220, 120) if (i + j) % 2 else (196, 40, 44), 2)
+    c.O(0.22, 0.4, 0.012, (40, 30, 30), 0)
+    c.L([(0.52, 0.38), (0.52, 0.18)], (110, 64, 34), 4)                                # muthukuda (parasol)
+    for i in range(8):
+        a0 = math.pi + i * math.pi / 8 + t * 0.6
+        c.P([(0.52, 0.06), (0.52 + 0.16 * math.cos(a0), 0.18), (0.52 + 0.16 * math.cos(a0 + math.pi / 8), 0.18)],
+            ((234, 110, 30), (196, 40, 44), (244, 200, 30), (60, 120, 190))[i % 4], 2)
+    c.E(0.52, 0.18, 0.16, 0.015, GOLDC, 2)
+
+def v_sweets(c, t):
+    p = c.p
+    c.R(0, 0.8, 1, 1, (176, 92, 62))
+    c.E(0.5, 0.78, 0.44, 0.1, STEEL)
+    items = [("laddu", 0.3, 0.72), ("laddu", 0.42, 0.74), ("laddu", 0.36, 0.66), ("jalebi", 0.6, 0.73), ("jalebi", 0.72, 0.74),
+             ("jalebi", 0.66, 0.66), ("halwa", 0.22, 0.79), ("unni", 0.8, 0.8), ("unni", 0.52, 0.81), ("mysore", 0.5, 0.68)]
+    for n, (kind, x, y) in enumerate(items):
+        t0 = 0.2 + n * 0.35
+        if t < t0: continue
+        yy = fall(t, t0, y - 0.6, y, 0.4)
+        if kind == "laddu":
+            c.O(x, yy, 0.055, (244, 160, 40))
+            for j in range(5): c.O(x + 0.03 * math.cos(j * 1.3), yy + 0.03 * math.sin(j * 1.3), 0.007, (214, 120, 20), 0)
+        elif kind == "jalebi":
+            pts = [(x + 0.012 * a * math.cos(a), yy + 0.012 * a * math.sin(a) * BW / BH) for a in np.linspace(0, 11, 40)]
+            c.L(pts, (240, 130, 20), 8)
+        elif kind == "halwa":
+            c.R(x - 0.06, yy - 0.04, x + 0.06, yy + 0.03, (190, 40, 60)); c.R(x + 0.06, yy - 0.04, x + 0.13, yy + 0.03, (90, 160, 70))
+        elif kind == "unni":
+            c.O(x, yy, 0.045, (150, 90, 40))
+        else:
+            c.R(x - 0.06, yy - 0.035, x + 0.06, yy + 0.03, (244, 206, 90))
+
+def v_munnar(c, t):
+    p = c.p
+    c.R(0, 0, 1, 1, (214, 232, 246), 0)
+    c.P([(0, 0.4), (0.25, 0.14), (0.5, 0.36), (0.72, 0.1), (1, 0.34), (1, 0.6), (0, 0.6)], (110, 150, 120), 3)
+    c.P([(0, 0.5), (0.35, 0.3), (0.7, 0.48), (1, 0.32), (1, 1), (0, 1)], (80, 150, 70), 3)
+    for r in range(9):                                                               # tea bushes in contour rows
+        y = 0.46 + r * 0.06
+        for i in range(10):
+            x = i / 9 + (r % 2) * 0.05
+            c.E(x, y + 0.02 * math.sin(x * 6 + r), 0.06, 0.022, (GREEN, LGREEN, DGREEN)[(i + r) % 3], 2)
+    for x in (0.2, 0.62, 0.86):                                                      # silver oaks
+        c.L([(x, 0.62), (x, 0.3)], (110, 80, 60), 4)
+        for j in range(4): c.E(x + 0.03 * ((-1) ** j), 0.32 + j * 0.06, 0.04, 0.02, DGREEN, 2)
+    for j in range(3):                                                               # mist drifting
+        mx = ((t * 0.06 + j * 0.4) % 1.4) - 0.2
+        c.d.ellipse((c.X(mx - 0.25), c.Y(0.3 + j * 0.08), c.X(mx + 0.25), c.Y(0.36 + j * 0.08)), fill=(255, 255, 255, 120))
+
+def v_waterfall(c, t):
+    p = c.p
+    c.R(0, 0, 1, 1, (90, 150, 80), 0)
+    for (x, y, r) in ((0.1, 0.1, 0.16), (0.85, 0.12, 0.18), (0.05, 0.45, 0.14), (0.95, 0.5, 0.14)): c.O(x, y, r, (DGREEN, GREEN)[int(x * 10) % 2])
+    c.P([(0.25, 0.08), (0.75, 0.08), (0.7, 0.72), (0.3, 0.72)], (130, 120, 110), 3)  # rock face
+    c.R(0.36, 0.06, 0.64, 0.74, (226, 240, 250), 0)
+    for k in range(10):                                                              # falling streaks
+        y = ((t * 0.9 + k * 0.1) % 1) * 0.7 + 0.06
+        x = 0.38 + (k * 0.037) % 0.24
+        c.L([(x, y), (x, min(y + 0.08, 0.74))], (150, 200, 236), 4)
+    c.E(0.5, 0.82, 0.46, 0.12, (90, 160, 210))
+    for k in range(5):
+        s_ = (t * 1.5 + k / 5) % 1
+        c.O(0.38 + k * 0.06, 0.74 - 0.08 * math.sin(math.pi * s_), 0.015, (240, 248, 255), 0)
+    c.O(0.1, 0.9, 0.08, (130, 120, 110)); c.O(0.9, 0.92, 0.07, (130, 120, 110))
+
+def v_houseboat(c, t):
+    p = c.p
+    c.R(0, 0, 1, 0.5, (210, 230, 248), 0); c.R(0, 0.5, 1, 1, (100, 166, 210), 0)
+    for x in (0.08, 0.3, 0.78, 0.95):
+        c.L([(x, 0.52), (x + 0.04, 0.18)], (110, 70, 40), 5)
+        for a in (-1, 1): c.P([(x + 0.04, 0.18), (x + 0.04 + a * 0.12, 0.23), (x + 0.04 + a * 0.05, 0.15)], GREEN, 2)
+    x = -0.5 + ((t * 0.09) % 1.9)
+    c.P([(x, 0.62), (x + 0.7, 0.62), (x + 0.64, 0.72), (x + 0.08, 0.72)], (120, 70, 36))   # kettuvallam hull
+    c.L([(x - 0.04, 0.56), (x, 0.62)], (120, 70, 36), 6); c.L([(x + 0.74, 0.56), (x + 0.7, 0.62)], (120, 70, 36), 6)
+    c.d.chord((c.X(x + 0.06), c.Y(0.44), c.X(x + 0.64), c.Y(0.72)), 180, 360, fill=(214, 178, 110), outline=c.o, width=int(4 * K))   # thatched roof
+    for j in range(6): c.L([(x + 0.1 + j * 0.09, 0.5), (x + 0.1 + j * 0.09, 0.58)], (170, 130, 70), 2)
+    c.R(x + 0.12, 0.54, x + 0.58, 0.62, (250, 236, 200), 3)
+    for j in range(4): c.R(x + 0.16 + j * 0.1, 0.56, x + 0.22 + j * 0.1, 0.6, (90, 150, 200), 2)
+    for k in range(3): c.A(x - 0.06 - k * 0.07, 0.72, 0.04, 200, 340, (240, 248, 255), 2)
+
+def v_herbs(c, t):
+    p = c.p
+    c.R(0, 0.8, 1, 1, SOIL, 0)
+    c.R(0.3, 0.6, 0.7, 0.92, (250, 250, 246)); c.R(0.26, 0.55, 0.74, 0.62, (234, 110, 30))        # tulsi thara
+    c.R(0.44, 0.7, 0.56, 0.82, (234, 110, 30), 3); c.O(0.5, 0.77, 0.015, (250, 200, 60), 0)        # lamp niche
+    for i in range(7):                                                              # upright tulsi stems, paired leaves, purple spikes
+        x = 0.36 + i * 0.047; top = 0.18 + 0.06 * abs(i - 3) / 3; sw = wob(t, 0.5, 0.008, i)
+        c.L([(x, 0.56), (x + sw, top)], (90, 70, 60), 3)
+        for j in range(5):
+            y = 0.52 - j * (0.52 - top) / 5.2
+            for s in (-1, 1): c.E(x + sw * (1 - j / 5) + s * 0.025, y, 0.022, 0.012, ((70, 140, 60), (96, 120, 70))[j % 2], 2)
+        c.L([(x + sw, top), (x + sw, top - 0.07)], (130, 70, 140), 5)
+    for x in (0.1, 0.9):                                                            # aloe vera and curry leaf pots
+        c.R(x - 0.07, 0.8, x + 0.07, 0.95, LAT, 3)
+    for k in range(4): c.P([(0.08, 0.8), (0.12, 0.8), (0.1 + (k - 1.5) * 0.05, 0.6 + (k % 2) * 0.05)], (90, 160, 90), 2)
+    c.L([(0.9, 0.8), (0.9, 0.56)], (90, 70, 60), 3)
+    for j in range(6):
+        for s in (-1, 1): c.E(0.9 + s * 0.03, 0.6 + j * 0.035, 0.022, 0.01, GREEN, 2)
+
+def v_coconut_oil(c, t):
+    p = c.p
+    for k in range(5):                                                              # warm light, no second sun
+        c.d.polygon(c.pts([(0.0 + k * 0.2, 0.0), (0.08 + k * 0.2, 0.0), (0.2 + k * 0.2, 0.5), (0.12 + k * 0.2, 0.5)]), fill=(255, 236, 160, 70))
+    c.P([(0.02, 0.42), (0.98, 0.38), (0.98, 0.72), (0.02, 0.76)], (214, 180, 120))  # woven mat
+    for j in range(6): c.L([(0.02 + j * 0.16, 0.42), (0.02 + j * 0.16, 0.76)], (180, 140, 80), 2)
+    for r in range(2):
+        for i in range(4):
+            x = 0.14 + i * 0.22; y = 0.5 + r * 0.14
+            c.E(x, y, 0.09, 0.05, (120, 72, 40)); c.E(x, y - 0.006, 0.07, 0.035, (252, 250, 240))
+    c.P([(0.72, 0.8), (0.88, 0.8), (0.9, 0.99), (0.7, 0.99)], (250, 246, 230)); c.R(0.76, 0.74, 0.84, 0.8, (250, 246, 230), 3)
+    lvl = 0.97 - 0.15 * ease(t / 6)
+    c.P([(0.71, lvl), (0.89, lvl), (0.9, 0.98), (0.7, 0.98)], (246, 222, 120), 0)
+    d_ = (t * 1.2) % 1
+    c.O(0.8, 0.7 + d_ * (lvl - 0.7), 0.012, (246, 222, 120), 2)
+
+def v_sadya(c, t):
+    p = c.p
+    leaf = [(0.02, 0.6), (0.2, 0.28), (0.6, 0.18), (0.98, 0.22), (0.98, 0.9), (0.6, 0.94), (0.2, 0.92)]
+    c.P(leaf, (150, 186, 70)); c.L([(0.02, 0.6), (0.98, 0.56)], (120, 150, 50), 5)
+    for k in range(7): c.L([(0.12 + k * 0.12, 0.59), (0.2 + k * 0.12, 0.24)], (130, 166, 60), 2)
+    items = [(0.5, 0.72, 0.15, 0.08, (252, 250, 244)), (0.52, 0.7, 0.07, 0.035, (230, 130, 40)), (0.84, 0.44, 0.08, 0.04, (244, 220, 150)),
+             (0.18, 0.4, 0.07, 0.02, (244, 200, 40)), (0.3, 0.3, 0.035, 0.02, (196, 40, 44)), (0.4, 0.3, 0.04, 0.022, (240, 230, 190)),
+             (0.52, 0.3, 0.04, 0.022, (170, 196, 80)), (0.64, 0.3, 0.04, 0.022, (250, 248, 230)), (0.76, 0.3, 0.035, 0.02, (150, 90, 40)),
+             (0.28, 0.48, 0.04, 0.025, (244, 210, 60)), (0.82, 0.76, 0.06, 0.035, (160, 100, 50)), (0.24, 0.74, 0.05, 0.03, (244, 230, 120))]
+    for i, (x, y, rx, ry, col) in enumerate(items):
+        t0 = 0.2 + i * 0.32
+        if t < t0: continue
+        c.E(x, fall(t, t0, y - 0.5, y, 0.35), rx, ry, col, 3)
+    if t > 0.2 + 12 * 0.32:
+        c.P([(0.1, 0.3), (0.26, 0.24), (0.28, 0.27), (0.13, 0.33)], (244, 220, 80), 3)     # banana
+
 # ------------------------------------------------------------------ layout: final 5x7 wall
 # warm (sun) cells: cols 0-1 and col 2 rows 0-2.  blue (sea) cells: the rest.  The first 9 sit in the centre 3x3.
 def is_warm(cell): return cell[0] <= 1 or (cell[0] == 2 and cell[1] <= 2)
 
 FIRST = [((1, 2), v_mum_drive), ((2, 2), v_dad_serve),                      # 2 on screen
          ((1, 3), v_alarm_off),                                             # 3
-         ((2, 3), v_courtyard), ((3, 2), v_fishing_net), ((3, 3), v_cycle),  # 6
+         ((2, 3), v_house), ((3, 2), v_fishing_net), ((3, 3), v_cycle),  # 6
          ((1, 4), v_easel), ((2, 4), v_backyard), ((3, 4), v_three_faiths)]  # 9
 SUN_CELL = (0, 4)
-REST_WARM = [v_verandah, v_sadya, v_fritters, v_chai, v_coconut_oil, v_jasmine, v_mango, v_pookalam, v_chenda,
-             v_kathakali, v_tender_coconut, v_herbal_water]
-REST_BLUE = [v_well, v_lotus, v_swing, v_ferry, v_bus, v_hospital, v_paddy, v_canoe, v_school, v_friends, v_herbs,
-             v_stars, v_neighbours]
+REST_WARM = [v_verandah, v_sadya, v_fritters, v_munnar, v_coconut_oil, v_jasmine, v_mango, v_pookalam, v_chenda,
+             v_kathakali, v_tender_coconut, v_sweets]
+REST_BLUE = [v_well, v_lotus, v_bed_swing, v_ferry, v_bus, v_hospital, v_paddy, v_canoe, v_waterfall, v_friends, v_herbs,
+             v_houseboat, v_elephant]
 
 def build_layout():
     out = {cell: v for cell, v in FIRST}

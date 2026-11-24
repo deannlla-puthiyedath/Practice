@@ -23,3 +23,5 @@ reel2/reel2_quick_music.mp4
 reel6/*.mp4
 reel6/__pycache__/
 reel6/chk_*.jpg
+reel6/*.wav
+reel6/render.log

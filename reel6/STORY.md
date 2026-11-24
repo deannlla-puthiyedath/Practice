@@ -88,3 +88,18 @@ Step 3 (6): 4 The house (carved door, tiled roof). 5 Her room, bed, morning wind
 Step 4 (9): 7 Her paints and easel. 8 Fort Kochi sea with the Chinese fishing nets. 9 Church, mosque and temple side by side.
 Step 5 (35), quick, Kerala, cheap or free:
 10 Tender coconut, drunk from the shell. 11 Banana fritters and four o'clock tea. 12 Pink herbal drinking water (pathimugham), free in homes and eateries. 13 Herb garden: tulsi, curry leaves, aloe, neem. 14 Well water, clean and cold. 15 Lotus pond. 16 Mango and jackfruit from her own trees. 17 Banana-leaf meal. 18 The oonjal swing. 19 A village library. 20 The ferry for a few rupees. 21 Window seat on the bus. 22 Tea-shop chai. 23 Hibiscus in her hair, coconut oil from Mum. 24 A good hospital nearby. 25 Street art on old Fort Kochi walls. 26 Cycling past the old Dutch houses. 27 Backwater canoe. 28 Christmas star lanterns on the houses. 29 Onam flower carpet. 30 Neighbours passing festival food over the wall. 31 Chenda drums at a temple festival. 32 Kathakali face. 33 School friends still in town. 34 Sunset on the beach. 35 The sun.
+
+## v5: full reel as built (render.py, music.py)
+About 58.5 s, 1080x1920. Cast: approved Mum and Dad (Reels 4 and 5), the girl with her hair down (Reel 3 face) in the Reel 6 racerback linen Sunset (2) dress, her friend. Tiles: her worried voice in rust ink, the inner voice in navy.
+
+| Sec | Scene | Words |
+|---|---|---|
+| 0-9 | Fort Kochi street, she walks fast under a paper cloud of worries (calendar, coin, clock, briefcase, falling graph) | I don't have a job. / I live with my parents. / What am I doing with my life? / Everyone is ahead of me. |
+| 9-24 | At the church. The bell rings at 16.3. Her cloud shrinks as she breathes, small, not gone | Alright now, for real, come back. / Maybe I just need more discipline. / Nope. You are still not here. / Focus. on. this. bell. / So take a deep breath. / Like you're not afraid to feel. |
+| 24-29 | The stop: no words, no music. Wind, sea, street voices, bell hum. Her reflection in a shop window; the camera goes into her dress | (none) |
+| 29-42.4 | The box wall: 2, 3, 6, 9, then 35 boxes | (none) |
+| 42.4-51.8 | Home: the courtyard with Mum and Dad (Dad laughs) | I don't have the money. / I have what it buys. / I'm not behind. / I'm already where they're going. |
+| 51.8-55 | Into her dress, the painting appears | (none) |
+| 55-58.5 | End card: rose logo, Della Antony, Wear art, not a logo. | |
+
+Voiceover still to come (AI voice or a friend). Music: synthesized violin only, plus the bell, wind and street sounds.
