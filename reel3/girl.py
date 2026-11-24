@@ -235,13 +235,11 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
             d.line(f.pl([(sx * 34, 188), (sx * 44, 164)]), fill=LINE, width=f.w(2.5))  # thin straps
         if necklace == "gold":
             d.line(f.pl([(-24, 160), (0, 182), (24, 160)]), fill=GOLD, width=f.w(2))
-        elif necklace == "diamond":
-            for i, t in enumerate(np.linspace(0.15, 0.85, 13)):
-                a = np.pi * t; x, y = -28 * np.cos(a), 160 + 22 * np.sin(a)
-                r = 3.4 if i % 2 else 2.6
-                d.ellipse([*f.p(x - r, y - r), *f.p(x + r, y + r)], fill=(240, 246, 255), outline=(150, 175, 210))
-            d.polygon(f.pl([(0, 183), (6, 192), (0, 203), (-6, 192)]), fill=(236, 246, 255), outline=(140, 170, 210))
-            for (sx_, sy_, rr) in ((12, 180, 9), (-22, 168, 6)):
+        elif necklace == "diamond":   # diamond choker, snug at the base of the neck
+            for i, x in enumerate(np.linspace(-17, 17, 9)):
+                y = 146 + 5 * (1 - (x / 17) ** 2); r = 3.6 if i % 2 else 3.0
+                d.ellipse([*f.p(x - r, y - r), *f.p(x + r, y + r)], fill=(242, 247, 255), outline=(150, 175, 210))
+            for (sx_, sy_, rr) in ((9, 146, 7), (-12, 144, 5)):
                 d.line(f.pl([(sx_ - rr, sy_), (sx_ + rr, sy_)]), fill=(255, 255, 255), width=f.w(1.5))
                 d.line(f.pl([(sx_, sy_ - rr), (sx_, sy_ + rr)]), fill=(255, 255, 255), width=f.w(1.5))
         # face
