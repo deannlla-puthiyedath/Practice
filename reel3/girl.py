@@ -105,7 +105,7 @@ ARMS = {
     "crayon":   ([(-60, 176), (-82, 290), (-110, 392)], [(60, 176), (88, 290), (40, 396)]),
     "stitch":   ([(-60, 176), (-86, 286), (-32, 336)], [(60, 176), (86, 286), (30, 330)]),
     "pay":      ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (98, 262), (176, 286)]),
-    "necklace_back": ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (74, 262)]),   # hand hidden in front
+    "necklace_back": ([(-60, 176), (-66, 300), (-70, 420)], [(60, 176), (78, 256), (50, 236)]),   # hand hidden in front
 }
 
 
@@ -235,13 +235,17 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
             d.line(f.pl([(sx * 34, 188), (sx * 44, 164)]), fill=LINE, width=f.w(2.5))  # thin straps
         if necklace == "gold":
             d.line(f.pl([(-24, 160), (0, 182), (24, 160)]), fill=GOLD, width=f.w(2))
-        elif necklace == "diamond":   # diamond choker, snug at the base of the neck
-            for i, x in enumerate(np.linspace(-17, 17, 9)):
-                y = 146 + 5 * (1 - (x / 17) ** 2); r = 3.6 if i % 2 else 3.0
-                d.ellipse([*f.p(x - r, y - r), *f.p(x + r, y + r)], fill=(242, 247, 255), outline=(150, 175, 210))
-            for (sx_, sy_, rr) in ((9, 146, 7), (-12, 144, 5)):
-                d.line(f.pl([(sx_ - rr, sy_), (sx_ + rr, sy_)]), fill=(255, 255, 255), width=f.w(1.5))
-                d.line(f.pl([(sx_, sy_ - rr), (sx_, sy_ + rr)]), fill=(255, 255, 255), width=f.w(1.5))
+        elif necklace == "diamond":   # sits low on the collarbone, bright against her skin
+            pts = [(-38 * np.cos(np.pi * t), 164 + 24 * np.sin(np.pi * t)) for t in np.linspace(0.08, 0.92, 15)]
+            for i, (x, y) in enumerate(pts):
+                r = 5.0 if i % 2 else 4.0
+                d.ellipse([*f.p(x - r - 1.5, y - r - 1.5), *f.p(x + r + 1.5, y + r + 1.5)], fill=(60, 70, 90))
+                d.ellipse([*f.p(x - r, y - r), *f.p(x + r, y + r)], fill=(250, 252, 255))
+                d.ellipse([*f.p(x - r * 0.5, y - r * 0.6), *f.p(x, y - r * 0.1)], fill=(190, 215, 245))
+            d.polygon(f.pl([(0, 186), (8, 196), (0, 210), (-8, 196)]), fill=(250, 252, 255), outline=(60, 70, 90))
+            for (sx_, sy_, rr) in ((14, 184, 11), (-26, 174, 8), (2, 214, 7)):
+                d.line(f.pl([(sx_ - rr, sy_), (sx_ + rr, sy_)]), fill=(255, 255, 255), width=f.w(2))
+                d.line(f.pl([(sx_, sy_ - rr), (sx_, sy_ + rr)]), fill=(255, 255, 255), width=f.w(2))
         # face
         face = [(-46, 36), (-47, 72), (-41, 96), (-25, 112), (0, 120), (25, 112), (41, 96), (47, 72), (46, 36), (28, 20), (0, 16), (-28, 20)]
         d.polygon(f.pl(face), fill=SKIN, outline=LINE, width=f.w(2))
@@ -288,7 +292,7 @@ def draw(layer, cx, top, height, view="front", eyes="closed", necklace=None, ear
         else:
             _limb(d, pts, f.w(17), SKIN, f)
         h = pts[-1]
-        if len(pts) == 2:
+        if len(pts) == 2 or arms == "necklace_back" and sx == 1:
             continue
         if coat:
             _fur(d, [h, (h[0] + 1, h[1])], f.w(13), seed=3 + sx)

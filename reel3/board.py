@@ -458,14 +458,14 @@ def mirror():
     d.ellipse([m[0] - 22, m[1] - 22, m[2] + 22, m[3] + 22], fill=(170, 130, 60))
     refl = Image.new("RGB", (FW, FH), (214, 230, 242)); rd = ImageDraw.Draw(refl)
     rd.rectangle([0, 1500, FW, FH], fill=(166, 122, 86))
-    rl = refl.convert("RGBA"); G2.draw(rl, 775, 400, 1290, arms="down", necklace="diamond", eyes="open"); refl = rl.convert("RGB")
+    rl = refl.convert("RGBA"); G2.draw(rl, 775, 400, 1290, arms="necklace", necklace="diamond", eyes="open"); refl = rl.convert("RGB")
     mk = Image.new("L", (FW, FH), 0); ImageDraw.Draw(mk).ellipse(m, fill=255)
     img.paste(refl, (0, 0), mk)
     shade(img, [(560, 300), (680, 300), (600, 1500), (560, 1400)], (255, 255, 255), 0.12)
     d = ImageDraw.Draw(img)
     d.line([620, 1640, 560, 1800], fill=(150, 110, 50), width=14); d.line([930, 1640, 990, 1800], fill=(150, 110, 50), width=14)
     # her, seen from behind, mid-turn: the back top is the plain blue water
-    lay = img.convert("RGBA"); G2.draw(lay, 300, 480, 1400, view="back", arms="down"); return lay.convert("RGB")
+    lay = img.convert("RGBA"); G2.draw(lay, 300, 480, 1400, view="back", arms="necklace_back"); return lay.convert("RGB")
 
 
 def jeweller():
