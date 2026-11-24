@@ -76,3 +76,15 @@ She thinks she is poor because she has no income. She stops long enough to see s
 23. An afternoon nap
 24. A class she chose to learn
 25. The sun (the camera goes through it into the painting)
+
+## v4: the box wall (replaces the v3 list)
+Boxes fill the screen in steps, each box animated:
+2 (stacked) -> 3 -> 6 (2x3) -> 9 (3x3) -> 35 (5x7, the whole screen, coloured like the dress). The 35th box is the sun; the camera goes through it into the painting.
+No text inside any picture (the alarm "off" is shown, not written).
+
+Step 1 (2): 1 Mum. 2 Dad serving her a plate of rice and fish curry (she doesn't cook).
+Step 2 (3): 3 Alarm clock switched off for good, tucked under a blanket, asleep.
+Step 3 (6): 4 The house (carved door, tiled roof). 5 Her room, bed, morning window. 6 Her own car in the porch.
+Step 4 (9): 7 Her paints and easel. 8 Fort Kochi sea with the Chinese fishing nets. 9 Church, mosque and temple side by side.
+Step 5 (35), quick, Kerala, cheap or free:
+10 Tender coconut, drunk from the shell. 11 Banana fritters and four o'clock tea. 12 Pink herbal drinking water (pathimugham), free in homes and eateries. 13 Herb garden: tulsi, curry leaves, aloe, neem. 14 Well water, clean and cold. 15 Lotus pond. 16 Mango and jackfruit from her own trees. 17 Banana-leaf meal. 18 The oonjal swing. 19 A village library. 20 The ferry for a few rupees. 21 Window seat on the bus. 22 Tea-shop chai. 23 Hibiscus in her hair, coconut oil from Mum. 24 A good hospital nearby. 25 Street art on old Fort Kochi walls. 26 Cycling past the old Dutch houses. 27 Backwater canoe. 28 Christmas star lanterns on the houses. 29 Onam flower carpet. 30 Neighbours passing festival food over the wall. 31 Chenda drums at a temple festival. 32 Kathakali face. 33 School friends still in town. 34 Sunset on the beach. 35 The sun.
