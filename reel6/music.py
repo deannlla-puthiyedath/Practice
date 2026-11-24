@@ -6,7 +6,7 @@ import numpy as np
 from numpy.fft import rfft, irfft
 
 SR = 48000
-DUR = 58.5
+DUR = 57.5
 BEAT = 60 / 66
 rng = np.random.default_rng(5)
 out = np.zeros((int(SR * (DUR + 4)), 2))
@@ -103,16 +103,16 @@ def amb_place(sig, t, pan=0.0, g=1.0):
 # A 0 - 9: her worries. Restless short bows in B minor (with C# and G, so never pentatonic), climbing.
 pat = [71, 73, 74, 78, 76, 74, 73, 74]
 tt, i = 0.25, 0
-while tt < 8.9:
+while tt < 7.9:
     m = pat[i % 8] + (2 if i >= 32 else 0)
     place(arco(m, 0.16, .32 + 0.1 * (tt / 9), 0.3, rel=.1), tt, 0.3 * np.sin(i))
     if i % 8 == 0: place(arco([59, 55, 57, 54][(i // 8) % 4], 2.0, .3, 0.6, rel=.5), tt, -0.35)
     i += 1; tt += 0.27
 # B 9 - 24: the inner voice. Long, calm, two violins.
-for t0, m1, m2, d in ((9.0, 78, 74, 2.4), (11.4, 76, 73, 2.2), (13.6, 74, 71, 2.4), (16.0, 73, 69, 2.6)):
+for t0, m1, m2, d in ((8.2, 78, 74, 2.3), (10.5, 76, 73, 2.1), (12.6, 74, 71, 2.2), (14.8, 73, 69, 2.4)):
     place(arco(m1, d, .42, 1.0, rel=.6), t0, 0.15); place(arco(m2, d, .26, 0.8, rel=.6), t0 + 0.05, -0.25)
-place(arco(81, 4.8, .45, 1.0, harmonic_flute=0.3, rel=1.4), 18.6, 0.1)             # the breath: one long held note
-place(arco(74, 4.8, .22, 0.8, rel=1.4), 18.7, -0.3)
+place(arco(81, 4.6, .45, 1.0, harmonic_flute=0.3, rel=1.4), 17.2, 0.1)             # the breath: one long held note
+place(arco(74, 4.6, .22, 0.8, rel=1.4), 17.3, -0.3)
 # the bell (16.3), and a softer one (17.7)
 def bell(f0, dur=6.0, g=1.0):
     n = int(SR * dur); t = np.arange(n) / SR; s = np.zeros(n)
@@ -120,34 +120,34 @@ def bell(f0, dur=6.0, g=1.0):
         s += a * np.sin(2 * np.pi * f0 * ratio * t + ratio) * np.exp(-t / dec)
     s[:60] *= np.linspace(0, 1, 60)
     return s / np.abs(s).max() * g
-amb_place(bell(523.0), 16.3, 0.2, 0.32); amb_place(bell(523.0, 5.0), 17.7, 0.2, 0.18); amb_place(bell(523.0, 6.0), 24.3, 0.3, 0.18)
+amb_place(bell(523.0), 15.1, 0.2, 0.32); amb_place(bell(523.0, 5.0), 16.5, 0.2, 0.18); amb_place(bell(523.0, 6.0), 22.4, 0.3, 0.16)
 # sea wind and street voices under everything, up at the stop
 nA = len(amb); tA = np.arange(nA) / SR
 wind = band_noise(nA, 150, 900) * (0.55 + 0.45 * np.sin(2 * np.pi * tA / 6.5) ** 2)
 voices = band_noise(nA, 300, 1600) * (0.5 + 0.5 * np.clip(np.sin(2 * np.pi * tA * 1.7) * np.sin(2 * np.pi * tA * 0.37), 0, 1))
-lvl = 0.05 + 0.22 * np.clip((tA - 23.6) / 0.8, 0, 1) * np.clip((29.6 - tA) / 1.0, 0, 1)
+lvl = 0.05 + 0.22 * np.clip((tA - 21.6) / 0.8, 0, 1) * np.clip((28.6 - tA) / 1.0, 0, 1)
 amb[:, 0] += (wind * 0.7 + voices * 0.35) * lvl; amb[:, 1] += (wind * 0.6 + voices * 0.4) * lvl * 0.95
 # D 29 - 42.4: the boxes. Warm, rising cantabile, a small lift at each new set of boxes.
 mel = [(74, 2), (76, 1), (78, 2), (81, 1), (79, 2), (78, 1), (76, 3), (78, 2), (81, 1), (83, 2), (85, 1), (86, 3), (85, 2), (83, 1), (81, 3)]
-t0 = 29.3
+t0 = 28.3
 for m, nb in mel:
-    if t0 > 42.2: break
+    if t0 > 42.0: break
     place(arco(m, nb * BEAT * 0.5 - 0.04, .48, 1.0, rel=.5), t0, 0.15)
     place(arco(m - 4 if m - 4 not in (70, 75) else m - 3, nb * BEAT * 0.5 - 0.04, .27, 0.8, rel=.5), t0 + 0.03, -0.3)
     t0 += nb * BEAT * 0.5
-for ts in (29.0, 31.6, 33.9, 36.6, 39.3):
+for ts in (28.0, 29.8, 31.9, 34.2, 36.7, 39.2):
     place(arco(62, 2.2, .3, 0.6, rel=.8), ts, -0.4); place(arco(69, 2.2, .2, 0.6, rel=.8), ts + 0.05, 0.4)
 # E 42.4 - 51.8: home. Slow, warm chords; the line comes down and rests.
 for i, (m1, m2, m3) in enumerate(((78, 74, 69), (76, 73, 69), (74, 71, 67), (73, 69, 64))):
-    t0 = 42.6 + i * 2.25
+    t0 = 42.4 + i * 2.25
     place(arco(m1, 2.1, .44, 1.0, rel=.8), t0, 0.15); place(arco(m2, 2.1, .3, .8, rel=.8), t0 + .04, -0.2); place(arco(m3 - 12, 2.1, .26, .6, rel=.8), t0 + .08, -0.45)
 # F 51.8 - 55: the reveal swell
-place(arco(74, 3.3, .55, 1.0, rel=1.2), 51.8, 0.1); place(arco(81, 3.3, .4, 1.0, rel=1.2), 51.9, -0.2); place(arco(86, 2.6, .35, 1.0, rel=1.2), 52.5, 0.3)
+place(arco(74, 3.3, .55, 1.0, rel=1.2), 51.4, 0.1); place(arco(81, 3.3, .4, 1.0, rel=1.2), 51.5, -0.2); place(arco(86, 2.6, .35, 1.0, rel=1.2), 52.1, 0.3)
 # G 55 - 58.5: coda
-place(arco(86, 3.0, .4, 0.8, harmonic_flute=0.5, rel=1.2), 55.1, 0.1); place(arco(78, 3.0, .25, 0.7, rel=1.2), 55.15, -0.3)
+place(arco(86, 2.9, .4, 0.8, harmonic_flute=0.5, rel=1.2), 54.5, 0.1); place(arco(78, 2.9, .25, 0.7, rel=1.2), 54.55, -0.3)
 # music rests at the stop
 gate = np.ones(len(out)); ta = np.arange(len(out)) / SR
-gate *= np.clip((23.6 - ta) / 0.8 + 1, 0, 1) * 0 + np.where(ta < 23.6, 1.0, np.where(ta < 24.4, (24.4 - ta) / 0.8, np.where(ta < 28.8, 0.0, np.clip((ta - 28.8) / 0.6, 0, 1))))
+gate *= np.clip((23.6 - ta) / 0.8 + 1, 0, 1) * 0 + np.where(ta < 21.8, 1.0, np.where(ta < 22.6, (22.6 - ta) / 0.8, np.where(ta < 27.6, 0.0, np.clip((ta - 27.6) / 0.6, 0, 1))))
 out *= gate[:, None]
 # ------------------------------------------------------------ room + out ---
 ir_len = int(SR * 2.0)

@@ -1004,11 +1004,12 @@ LAYOUT = build_layout()
 ORDER = [cell for cell, _ in FIRST] + sorted([c_ for c_ in LAYOUT if c_ not in dict(FIRST)], key=lambda c_: (c_[1] * 7 + c_[0] * 3) % 35)
 
 # ------------------------------------------------------------------ timing (seconds)
-STAGES = [(2, (1, 2)), (3, (1, 3)), (6, (2, 3)), (9, (3, 3)), (35, (COLS, ROWS))]
-T_STAGE = [0.0, 2.6, 4.9, 7.6, 10.3]
+STAGES = [(1, (1, 1)), (2, (1, 2)), (3, (1, 3)), (6, (2, 3)), (9, (3, 3)), (35, (COLS, ROWS))]
+T_STAGE = [0.0, 1.8, 3.9, 6.2, 8.7, 11.2]
 TR = 0.7                      # transition length
-T_PUSH, T_REVEAL, T_END = 13.4, 15.0, 17.0
+T_PUSH, T_REVEAL, T_END = 14.2, 15.8, 17.8
 STAGE_POS = {                 # slot (col,row) of each box in the smaller grids
+    1: {(1, 2): (0, 0)},
     2: {(1, 2): (0, 0), (2, 2): (0, 1)},
     3: {(1, 2): (0, 0), (2, 2): (0, 1), (1, 3): (0, 2)},
     6: {(1, 2): (0, 0), (2, 2): (1, 0), (1, 3): (0, 1), (2, 3): (1, 1), (3, 2): (0, 2), (3, 3): (1, 2)},
@@ -1033,7 +1034,7 @@ def appear_time(cell):
     for s, (n, _) in enumerate(STAGES):
         if k < n:
             base = T_STAGE[s]
-            if s == 4: return base + 0.035 * (k - 9)
+            if n == 35: return base + 0.035 * (k - 9)
             return base
     return 0
 
@@ -1048,8 +1049,10 @@ def box_state(cell, t):
     k = ORDER.index(cell)
     target = stage_rect(n, grid, cell)
     first_stage = next(i for i, (nn, _) in enumerate(STAGES) if k < nn)
+    if s == first_stage and n == 1:  # the first box arrives from the zoom into the dress, already in place
+        return target, 1.0
     if s == first_stage:            # sliding in like a scroll from below
-        dur = TR if s < 4 else 0.45
+        dur = TR if n < 35 else 0.45
         e = ease((t - ta) / dur)
         x, y, w_, h_ = target
         return (x, y + (1 - e) * 260, w_, h_), e
@@ -1079,7 +1082,7 @@ def wall(t):
         st = box_state(cell, t)
         if st is None: continue
         (x, y, w_, h_), al = st
-        if t >= T_STAGE[4] + 1.5:
+        if t >= T_STAGE[-1] + 1.5:
             x += 3 * math.sin(t * 0.5 + cell[0] + cell[1] * 2); y += 3 * math.cos(t * 0.4 + cell[1] + cell[0])
         im = cell_img(cell, t - appear_time(cell), (w_, h_))
         if al < 1:

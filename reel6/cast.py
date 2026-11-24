@@ -25,9 +25,11 @@ def linen(img, k=0.16, seed=7):
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8))
 
 def dress_print():
-    p = Image.open(os.path.join(HERE, "sunset2.jpg")).convert("RGB").rotate(90, expand=True)   # sky to the left
-    p = p.crop((0, 0, 810, p.height))                     # sun half and sea half about equal, like the dress photo
-    return linen(p.resize((560, 1400), Image.LANCZOS))    # narrow, so the whole width wraps the fitted dress
+    art = os.path.join(HERE, "artwork.jpg")                # Della's full-resolution artwork, when it is there
+    p = Image.open(art if os.path.exists(art) else os.path.join(HERE, "sunset2.jpg")).convert("RGB")
+    if p.width > p.height: p = p.rotate(90, expand=True)  # sky to the left
+    p = p.crop((0, 0, int(p.width * 810 / 1083), p.height))  # sun half and sea half about equal, like the dress photo
+    return linen(p.resize((900, 2250), Image.LANCZOS), k=0.10)   # narrow, so the whole width wraps the fitted dress
 
 def girl6():
     src = open(os.path.join(HANTA, "reel3", "girl.py")).read()
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     g = girl6()
     for name, kw in (("girl_front.png", dict(view="front")), ("girl_open.png", dict(view="front", eyes="open")),
                      ("girl_back.png", dict(view="back")), ("girl_seat.png", dict(view="front", pose="seat", arms="knees"))):
-        L = Image.new("RGBA", (700, 1200), (0, 0, 0, 0)); g.draw(L, 350, 60, 1050, **kw); save(L, name)
+        L = Image.new("RGBA", (1100, 1850), (0, 0, 0, 0)); g.draw(L, 550, 90, 1620, **kw); save(L, name)
     L = Image.new("RGBA", (700, 1200), (0, 0, 0, 0)); f = g.draw(L, 350, 60, 1050, view="front", earrings=False)
     d = ImageDraw.Draw(L); LINE = g.LINE; TEAL = (46, 128, 138)
     for sx in (-1, 1): g._limb(d, [f.p(sx * 21, 560), f.p(sx * 19, 760), f.p(sx * 17, 930)], f.w(26), (240, 236, 226), f)
